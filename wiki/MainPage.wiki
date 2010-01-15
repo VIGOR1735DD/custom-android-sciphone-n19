@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary Custom Android for Sciphone N19 Wiki
 
 = Introduction =
 
