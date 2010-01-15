@@ -1,0 +1,35 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+Initiative for custom android builds for sciphone n19
+
+
+= Details =
+
+Uploaded files:
+
+== Official Update ==
+
+Image_N19_EN_20100106_900_1800_Update_Market.rar - official update, that works for some owners of Sciphone N19, and it doesn't work for other (yet)
+
+== BusyBox ==
+
+busybox -- set of usual unix tools.  To install it:
+{{{
+adb -d push busybox /system/app
+adb -d shell
+# chmod 0777 /system/app/busybox
+}}}
+
+To use it:
+{{{
+adb -d shell
+# busybox ls -al
+# busybox fdisk
+...
+}}}
+
+== GoogleApps ==
+
+Collection of updated tools, added feature (from the official update) is gmail/calendar/contact synchronisation.  YouTube currently doesn't play sound.
