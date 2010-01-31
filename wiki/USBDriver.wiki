@@ -1,0 +1,16 @@
+#summary USB Driver for Sciphone N19
+
+= Introduction =
+
+USB Driver for Sciphone N19
+
+
+= Details =
+
+Go to [http://developer.android.com/sdk/index.html] and download SDK.
+
+After installing the SDK, download USB driver for windows.
+
+Then, replace android_winusb.inf with the one from this site: [http://custom-android-sciphone-n19.googlecode.com/files/android_winusb.inf]
+
+The driver will now recognize N19.
