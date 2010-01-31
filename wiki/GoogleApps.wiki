@@ -1,7 +1,9 @@
+#summary GoogleApps
 #labels Featured
+
 = Introduction =
 
-This is a collection of apps gathered from other update ROMs.  This update works only if you've already installed OfficalUpdate.
+This is a collection of apps gathered from other update ROMs.  This update works only if you've already installed OfficalUpdate.  It enables contacts synchronization, amongst other things.
 
 
 = Details =
