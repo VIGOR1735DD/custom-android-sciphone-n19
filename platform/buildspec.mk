@@ -47,6 +47,7 @@ endif
 # Specify an alternative tool chain prefix if needed.
 TARGET_ARCH:=arm
 TARGET_ARCH_VERSION:=armv4t
+TARGET_TOOLS_PREFIX:=prebuilt/linux-x86/toolchain/armv4t-android-eabi-4.2.1/bin/armv4t-android-eabi-
 
 # Specify the extra CFLAGS to use when building a module whose
 # DEBUG_MODULE_ variable is set.  Host and device flags are handled
