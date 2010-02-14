@@ -1,0 +1,21 @@
+#summary First custom build for Sciphone N19
+#labels Featured
+
+= Introduction =
+
+We have the first custom build.  It is not reliable yet, so it is only to be used if you intend to find problems and report.  Main intention was to test repackaging procedure.  It also has apps2sd (and optional swap2sd).
+
+
+= Details =
+
+Download http://custom-android-sciphone-n19.googlecode.com/files/custom-sciphone-n19-1.5-cupcake-beta-0.1.zip unzip and copy onto sd card, put the card into phone, reboot phone, wait for update to complete.  Replace the card, reboot.
+
+After the first boot up that takes forever, power off the phone, put the sd card (the one you intend to use day-to-day) into a computer, and partition it.
+
+First partition (primary) should be FAT and will be used as before, for stuff on /sdcard
+
+Second partition should be also primary, formatted as ext2, 512Mb (or less).  /data/app will be symlinked to this place.
+
+This partition (if you want) should be primary, formatted as linux swap, 128Mb.
+
+The way mounting works in not bullet-proof.  We run /system/etc/app2sd.sh during boot up, and this will fail if 'vold' didn't start up.  So, sometimes your apps disappear, and you have to reboot the phone.  This will be fixed in the next release.
