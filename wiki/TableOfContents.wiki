@@ -1,4 +1,5 @@
  * [OfficialUpdate Official Update]
+ * [CustomUpdate Custom Update beta v0.1]
  * [USBDriver USB Driver]
  * [MicGain Micrphone Gain]
  * [GoogleApps Google Apps]
