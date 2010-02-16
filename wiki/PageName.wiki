@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary Hardware hacks for the N19
 #labels Hardware,Hacks,Phase-Implementation
 
 = Introduction =
