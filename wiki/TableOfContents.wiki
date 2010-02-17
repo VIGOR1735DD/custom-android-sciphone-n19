@@ -1,9 +1,9 @@
-*Roms*
+===Roms===
 
  * [OfficialUpdate Official Update]
  * [CustomUpdate Custom Update beta v0.1]
 
-*Mods*
+===Mods===
 
  * [RepackRootfs How to repack Ramdisk]
  * [USBDriver USB Driver]
@@ -11,6 +11,6 @@
  * [GoogleApps Google Apps]
  * [BusyBox busybox]
 
-*Hacks*
+===Hacks===
 
  * [HardwareHacks Hardware Hacks]
