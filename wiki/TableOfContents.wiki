@@ -1,7 +1,11 @@
+*Roms*
  * [OfficialUpdate Official Update]
  * [CustomUpdate Custom Update beta v0.1]
+*Mods*
  * [RepackRootfs How to repack Ramdisk]
  * [USBDriver USB Driver]
  * [MicGain Micrphone Gain]
  * [GoogleApps Google Apps]
  * [BusyBox busybox]
+*Hacks*
+ * [HardwareHacks Hardware Hacks]
