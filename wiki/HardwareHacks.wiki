@@ -28,4 +28,6 @@ Power management chip: Dialog Semiconductor DA9030.
 || LCD Driver || [http://custom-android-sciphone-n19.googlecode.com/files/ILI9331.pdf Ilitek ILI9331] || Yes ||
 || Power Management || Dialog Semiconductor DA9030 || Yes ||
 || NAND Flash || Samsung K9F1G08Q0M or SSB K9F1G08V0M || Yes ||
+|| Camera Sensor || OV2640 || Yes ||
+|| MCP (What's this?) || K5D1G1G || Yes ||
 || AGPS || Hammerhead PMB 2520 (Uncomfirmed) || No ||
