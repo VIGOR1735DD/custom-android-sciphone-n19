@@ -30,4 +30,5 @@ Power management chip: Dialog Semiconductor DA9030.
 || NAND Flash || Samsung K9F1G08Q0M or SSB K9F1G08V0M || Yes ||
 || Camera Sensor || OV2640 || Yes ||
 || MCP (What's this? [http://www.nvidia.com/content/nsist/module/what_mcp.asp?partner= this]?) || K5D1G1G || Yes ||
+|| Audio Codec || Asahi Kasei AK4648 || Yes ||
 || AGPS || Hammerhead PMB 2520 (Unconfirmed) || No ||
