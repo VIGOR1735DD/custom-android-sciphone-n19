@@ -1,7 +1,7 @@
 #summary Guide on enabling _Linux-USB Ethernet Gadget_.
 
 
-= HowTo =
+= Description =
 
 To start _Linux-USB Ethernet Gadget_ following script should be executed:
 {{{
