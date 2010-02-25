@@ -75,13 +75,11 @@ SHOW_COMMANDS:= $(filter showcommands,$(MAKECMDGOALS))
 # ###############################################################
 
 # These can be changed to modify both host and device modules.
-COMMON_GLOBAL_CFLAGS:= -DANDROID -fmessage-length=0 -W -Wall -Wno-unused
-COMMON_DEBUG_CFLAGS:=
+COMMON_GLOBAL_CFLAGS:= -DANDROID -fmessage-length=0 -W -Wall -Wno-unused -Winit-self -Wpointer-arith
 COMMON_RELEASE_CFLAGS:= -DNDEBUG -UDEBUG
 
-COMMON_GLOBAL_CPPFLAGS:=
-COMMON_DEBUG_CPPFLAGS:=
-COMMON_RELEASE_CPPFLAGS:=
+COMMON_GLOBAL_CPPFLAGS:= $(COMMON_GLOBAL_CFLAGS) -Wsign-promo
+COMMON_RELEASE_CPPFLAGS:= $(COMMON_RELEASE_CFLAGS)
 
 # Set the extensions used for various packages
 COMMON_PACKAGE_SUFFIX := .zip
@@ -89,7 +87,13 @@ COMMON_JAVA_PACKAGE_SUFFIX := .jar
 COMMON_ANDROID_PACKAGE_SUFFIX := .apk
 
 # list of flags to turn specific warnings in to errors
-TARGET_ERROR_FLAGS := -Werror=return-type
+TARGET_ERROR_FLAGS := -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point
+
+# TODO: do symbol compression
+TARGET_COMPRESS_MODULE_SYMBOLS := false
+
+# Default is to prelink modules.
+TARGET_PRELINK_MODULE := true
 
 # ###############################################################
 # Include sub-configuration files
@@ -106,6 +110,33 @@ TARGET_ERROR_FLAGS := -Werror=return-type
 # Define most of the global variables.  These are the ones that
 # are specific to the user's build configuration.
 include $(BUILD_SYSTEM)/envsetup.mk
+
+# Boards may be defined under $(SRC_TARGET_DIR)/board/$(TARGET_DEVICE)
+# or under vendor/*/$(TARGET_DEVICE).  Search in both places, but
+# make sure only one exists.
+# Real boards should always be associated with an OEM vendor.
+board_config_mk := \
+	$(strip $(wildcard \
+		$(SRC_TARGET_DIR)/board/$(TARGET_DEVICE)/BoardConfig.mk \
+		vendor/*/$(TARGET_DEVICE)/BoardConfig.mk \
+	))
+ifeq ($(board_config_mk),)
+  $(error No config file found for TARGET_DEVICE $(TARGET_DEVICE))
+endif
+ifneq ($(words $(board_config_mk)),1)
+  $(error Multiple board config files for TARGET_DEVICE $(TARGET_DEVICE): $(board_config_mk))
+endif
+include $(board_config_mk)
+TARGET_DEVICE_DIR := $(patsubst %/,%,$(dir $(board_config_mk)))
+board_config_mk :=
+
+# Clean up/verify variables defined by the board config file.
+TARGET_BOOTLOADER_BOARD_NAME := $(strip $(TARGET_BOOTLOADER_BOARD_NAME))
+TARGET_CPU_ABI := $(strip $(TARGET_CPU_ABI))
+ifeq ($(TARGET_CPU_ABI),)
+  $(error No TARGET_CPU_ABI defined by board config: $(board_config_mk))
+endif
+TARGET_CPU_ABI2 := $(strip $(TARGET_CPU_ABI2))
 
 # $(1): os/arch
 define select-android-config-h
@@ -158,6 +189,7 @@ AIDL := $(HOST_OUT_EXECUTABLES)/aidl$(HOST_EXECUTABLE_SUFFIX)
 ICUDATA := $(HOST_OUT_EXECUTABLES)/icudata$(HOST_EXECUTABLE_SUFFIX)
 SIGNAPK_JAR := $(HOST_OUT_JAVA_LIBRARIES)/signapk$(COMMON_JAVA_PACKAGE_SUFFIX)
 MKBOOTFS := $(HOST_OUT_EXECUTABLES)/mkbootfs$(HOST_EXECUTABLE_SUFFIX)
+MINIGZIP := $(HOST_OUT_EXECUTABLES)/minigzip$(HOST_EXECUTABLE_SUFFIX)
 MKBOOTIMG := $(HOST_OUT_EXECUTABLES)/mkbootimg$(HOST_EXECUTABLE_SUFFIX)
 MKYAFFS2 := $(HOST_OUT_EXECUTABLES)/mkyaffsimage$(HOST_EXECUTABLE_SUFFIX)
 APICHECK := $(HOST_OUT_EXECUTABLES)/apicheck$(HOST_EXECUTABLE_SUFFIX)
@@ -168,6 +200,7 @@ MKTARBALL := build/tools/mktarball.sh
 TUNE2FS := tune2fs
 E2FSCK := e2fsck
 JARJAR := java -jar $(HOST_OUT_JAVA_LIBRARIES)/jarjar.jar
+PROGUARD := external/proguard/bin/proguard.sh
 
 # dx is java behind a shell script; no .exe necessary.
 DX := $(HOST_OUT_EXECUTABLES)/dx
@@ -227,19 +260,15 @@ endif
 # ###############################################################
 
 HOST_GLOBAL_CFLAGS += $(COMMON_GLOBAL_CFLAGS)
-HOST_DEBUG_CFLAGS += $(COMMON_DEBUG_CFLAGS)
 HOST_RELEASE_CFLAGS += $(COMMON_RELEASE_CFLAGS)
 
 HOST_GLOBAL_CPPFLAGS += $(COMMON_GLOBAL_CPPFLAGS)
-HOST_DEBUG_CPPFLAGS += $(COMMON_DEBUG_CPPFLAGS)
 HOST_RELEASE_CPPFLAGS += $(COMMON_RELEASE_CPPFLAGS)
 
 TARGET_GLOBAL_CFLAGS += $(COMMON_GLOBAL_CFLAGS)
-TARGET_DEBUG_CFLAGS += $(COMMON_DEBUG_CFLAGS)
 TARGET_RELEASE_CFLAGS += $(COMMON_RELEASE_CFLAGS)
 
 TARGET_GLOBAL_CPPFLAGS += $(COMMON_GLOBAL_CPPFLAGS)
-TARGET_DEBUG_CPPFLAGS += $(COMMON_DEBUG_CPPFLAGS)
 TARGET_RELEASE_CPPFLAGS += $(COMMON_RELEASE_CPPFLAGS)
 
 HOST_GLOBAL_LD_DIRS += -L$(HOST_OUT_INTERMEDIATE_LIBRARIES)
@@ -250,7 +279,7 @@ TARGET_PROJECT_INCLUDES:= $(SRC_HEADERS) $(TARGET_OUT_HEADERS)
 
 # Many host compilers don't support these flags, so we have to make
 # sure to only specify them for the target compilers checked in to
-# the source tree. The simulator uses the target flags but the
+# the source tree. The simulator passes the target flags to the
 # host compiler, so only set them for the target when the target
 # is not the simulator.
 ifneq ($(TARGET_SIMULATOR),true)
@@ -258,25 +287,11 @@ TARGET_GLOBAL_CFLAGS += $(TARGET_ERROR_FLAGS)
 TARGET_GLOBAL_CPPFLAGS += $(TARGET_ERROR_FLAGS)
 endif
 
-ifeq ($(HOST_BUILD_TYPE),release)
-HOST_GLOBAL_CFLAGS+= $(HOST_RELEASE_CFLAGS)
-HOST_GLOBAL_CPPFLAGS+= $(HOST_RELEASE_CPPFLAGS)
-else
-HOST_GLOBAL_CFLAGS+= $(HOST_DEBUG_CFLAGS)
-HOST_GLOBAL_CPPFLAGS+= $(HOST_DEBUG_CPPFLAGS)
-endif
+HOST_GLOBAL_CFLAGS += $(HOST_RELEASE_CFLAGS)
+HOST_GLOBAL_CPPFLAGS += $(HOST_RELEASE_CPPFLAGS)
 
-ifeq ($(TARGET_BUILD_TYPE),release)
-TARGET_GLOBAL_CFLAGS+= $(TARGET_RELEASE_CFLAGS)
-TARGET_GLOBAL_CPPFLAGS+= $(TARGET_RELEASE_CPPFLAGS)
-else
-TARGET_GLOBAL_CFLAGS+= $(TARGET_DEBUG_CFLAGS)
-TARGET_GLOBAL_CPPFLAGS+= $(TARGET_DEBUG_CPPFLAGS)
-endif
-
-# TODO: do symbol compression
-TARGET_COMPRESS_MODULE_SYMBOLS := false
-TARGET_PRELINK_MODULE := true
+TARGET_GLOBAL_CFLAGS += $(TARGET_RELEASE_CFLAGS)
+TARGET_GLOBAL_CPPFLAGS += $(TARGET_RELEASE_CPPFLAGS)
 
 PREBUILT_IS_PRESENT := $(if $(wildcard prebuilt/Android.mk),true)
 
@@ -290,7 +305,7 @@ PREBUILT_IS_PRESENT := $(if $(wildcard prebuilt/Android.mk),true)
 # The 'current' version is whatever this source tree is.  Once the apicheck
 # tool can generate the stubs from the xml files, we'll use that to be
 # able to build back-versions.  In the meantime, 'current' is the only
-# one supported.  
+# one supported.
 #
 # sgrax     is the opposite of xargs.  It takes the list of args and puts them
 #           on each line for sort to process.
