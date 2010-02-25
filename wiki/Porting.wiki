@@ -1,0 +1,97 @@
+#summary Porting Android to Sciphone N19 repository structure
+
+= Introduction =
+
+There are various version of Android that you may be attempting to port.  In SVN we have 3 branches for the 3 main Android releases.  Any further branches will be created as interested developers decide to to (eg, porting of the unreleased main android branch)
+
+
+= Details =
+
+Current status of this sub-project is "work-in-progress".  Android version you will compile will not work on Sciphone N19, and updating it will cause the phone to start up and remain unresponsive.  Use this to compile parts that you want to add or modify, or to work towards fixing the 'patch' to produce flashable output.
+
+To build Android from source follow these steps:
+
+== Branches ==
+
+There are several branches of Android source code.  Choose which one you want to work on.  Available branches that are being worked on here are cupcake (which is release 1.5), donut (release 1.6) and eclair (release 2.1).  Other branches of Android source code are considered, at this stage.
+
+== Procedure ==
+
+=== Prerequisites ===
+
+You need a Linux box configured as required by Android build process (see below).  Further due to armv4t specific toolchains, you must use 32bit version of Linux (therefore there may be issues if you are using MacOS).  All other requirements you must meet for Android will suffice for N19 port.
+
+=== Get Android Source Code ===
+
+Follow the instructions on http://source.android.com/download
+
+When you get to the step 'Initializing a Repo client' make sure you put the branch name you wish to work on.  Eg: 
+
+{{{
+$ repo init -u git://android.git.kernel.org/platform/manifest.git -b eclair
+}}}
+
+This will get eclair branch of the Android source.  Download and wait for everything to finish.
+
+=== Get Sciphone N19 patches ===
+
+Using your subversion client, get this projects branch that matches the branch of Android you downloaded:
+
+If you downloaded cupcake, use:
+{{{
+svn checkout http://custom-android-sciphone-n19.googlecode.com/svn/branches/cupcake_platform_patch n19_cupcake_platform
+}}}
+
+If you downloaded donut, use:
+{{{
+svn checkout http://custom-android-sciphone-n19.googlecode.com/svn/branches/donut_platform_patch n19_donut_platform
+}}}
+
+If you downloaded eclair, use:
+{{{
+svn checkout http://custom-android-sciphone-n19.googlecode.com/svn/branches/eclair_platform_patch n19_eclair_platform
+}}}
+
+Copy the files from n19_xxx_platform directory to the directory where you have your "platform" directory checked out from git/repo.
+
+Unzip armv4t specific compilers:
+{{{
+cd prebuilt/linux-x86/toolchain/
+tar jxcf armv4t-android-eabi-4.2.1.tar.bz2
+}}}
+
+=== Compiling ===
+
+Run 'make -j4' to build the whole android, from the 'platform' directory
+
+=== Submit changes back here ===
+
+As you fix / improve the build process, please submit the changes back here.  
+
+Ask for read/write access to subversion via forums (see project home for the link).
+
+Track the files you changed in the 'platform' tree to import them back into subversion.
+
+= Status of Branches =
+
+== Cupcake Port ==
+
+1. N19 drivers -- not present (phone cannot run the whole thing)
+
+2. Compile -- all compilation issues have been resolved.  Output in out/target/N19... is usable and executable by the phone
+
+Perfect branch to work on if you intend to resolve N19 drivers issues
+
+== Donut Port ==
+
+1. N19 drivers -- not present (phone cannot run the whole thing)
+
+2. Compile -- fails in many places due to armv4t incompatibilities.
+
+Currently without big interest to pursue, but major benefit when compared to 1.5 is much faster execution of Java apps.
+
+== Eclair Port ==
+
+1. N19 drivers -- not present (phone cannot run the whole thing)
+
+2. Compile -- fails in many places due to armv4t incompatibilities.
