@@ -1,5 +1,5 @@
 /*
- * unyaffs: extract files from yaffs2 file system image to current directory
+ * unyaffs1: extract files from yaffs1 file system image to current directory
  *
  * Created by Kai Wei <kai.wei.cn@gmail.com>
  * This program is free software; you can redistribute it and/or modify
