@@ -62,9 +62,6 @@ endif
 # Apps are always signed with test keys, and may be re-signed in a post-build
 # step.  If that happens, the "test-keys" tag will be removed by that step.
 BUILD_VERSION_TAGS += test-keys
-ifndef INCLUDE_TEST_OTA_KEYS
-  BUILD_VERSION_TAGS += ota-rel-keys
-endif
 BUILD_VERSION_TAGS := $(subst $(space),$(comma),$(sort $(BUILD_VERSION_TAGS)))
 
 # A human-readable string that descibes this build in detail.
@@ -121,6 +118,7 @@ $(INSTALLED_BUILD_PROP_TARGET): $(BUILDINFO_SH) $(INTERNAL_BUILD_ID_MAKEFILE)
 			PRODUCT_BRAND="$(PRODUCT_BRAND)" \
 			PRODUCT_DEFAULT_LANGUAGE="$(call default-locale-language,$(PRODUCT_LOCALES))" \
 			PRODUCT_DEFAULT_REGION="$(call default-locale-region,$(PRODUCT_LOCALES))" \
+			PRODUCT_DEFAULT_WIFI_CHANNELS="$(PRODUCT_DEFAULT_WIFI_CHANNELS)" \
 			PRODUCT_MODEL="$(PRODUCT_MODEL)" \
 			PRODUCT_MANUFACTURER="$(PRODUCT_MANUFACTURER)" \
 			PRIVATE_BUILD_DESC="$(PRIVATE_BUILD_DESC)" \
@@ -129,10 +127,13 @@ $(INSTALLED_BUILD_PROP_TARGET): $(BUILDINFO_SH) $(INTERNAL_BUILD_ID_MAKEFILE)
 			BUILD_NUMBER="$(BUILD_NUMBER)" \
 			PLATFORM_VERSION="$(PLATFORM_VERSION)" \
 			PLATFORM_SDK_VERSION="$(PLATFORM_SDK_VERSION)" \
+			PLATFORM_VERSION_CODENAME="$(PLATFORM_VERSION_CODENAME)" \
 			BUILD_VERSION_TAGS="$(BUILD_VERSION_TAGS)" \
 			TARGET_BOOTLOADER_BOARD_NAME="$(TARGET_BOOTLOADER_BOARD_NAME)" \
 			BUILD_FINGERPRINT="$(BUILD_FINGERPRINT)" \
 			TARGET_BOARD_PLATFORM="$(TARGET_BOARD_PLATFORM)" \
+			TARGET_CPU_ABI="$(TARGET_CPU_ABI)" \
+			TARGET_CPU_ABI2="$(TARGET_CPU_ABI2)" \
 	        bash $(BUILDINFO_SH) > $@
 	$(hide) if [ -f $(TARGET_DEVICE_DIR)/system.prop ]; then \
 	          cat $(TARGET_DEVICE_DIR)/system.prop >> $@; \
@@ -227,6 +228,15 @@ ifdef CREATE_MODULE_INFO_FILE
 	"INSTALLED=\"$(strip $(ALL_MODULES.$(m).INSTALLED))\"" >> $(MODULE_INFO_FILE)))
 endif
 
+# -----------------------------------------------------------------
+
+# The test key is used to sign this package, and as the key required
+# for future OTA packages installed by this system.  Actual product
+# deliverables will be re-signed by hand.  We expect this file to
+# exist with the suffixes ".x509.pem" and ".pk8".
+DEFAULT_KEY_CERT_PAIR := $(SRC_TARGET_DIR)/product/security/testkey
+
+
 # Rules that need to be present for the simulator, even
 # if they don't do anything.
 .PHONY: systemimage
@@ -250,9 +260,9 @@ BUILT_RAMDISK_TARGET := $(PRODUCT_OUT)/ramdisk.img
 
 # We just build this directly to the install location.
 INSTALLED_RAMDISK_TARGET := $(BUILT_RAMDISK_TARGET)
-$(INSTALLED_RAMDISK_TARGET): $(MKBOOTFS) $(INTERNAL_RAMDISK_FILES)
+$(INSTALLED_RAMDISK_TARGET): $(MKBOOTFS) $(INTERNAL_RAMDISK_FILES) | $(MINIGZIP)
 	$(call pretty,"Target ram disk: $@")
-	$(hide) $(MKBOOTFS) $(TARGET_ROOT_OUT) | gzip > $@
+	$(hide) $(MKBOOTFS) $(TARGET_ROOT_OUT) | $(MINIGZIP) > $@
 
 
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
@@ -271,6 +281,11 @@ ifdef BOARD_KERNEL_CMDLINE
   INTERNAL_BOOTIMAGE_ARGS += --cmdline "$(BOARD_KERNEL_CMDLINE)"
 endif
 
+BOARD_KERNEL_BASE := $(strip $(BOARD_KERNEL_BASE))
+ifdef BOARD_KERNEL_BASE
+  INTERNAL_BOOTIMAGE_ARGS += --base $(BOARD_KERNEL_BASE)
+endif
+
 INSTALLED_BOOTIMAGE_TARGET := $(PRODUCT_OUT)/boot.img
 
 ifeq ($(TARGET_BOOTIMAGE_USE_EXT2),true)
@@ -286,7 +301,7 @@ else # TARGET_BOOTIMAGE_USE_EXT2 != true
 $(INSTALLED_BOOTIMAGE_TARGET): $(MKBOOTIMG) $(INTERNAL_BOOTIMAGE_FILES)
 	$(call pretty,"Target boot image: $@")
 	$(hide) $(MKBOOTIMG) $(INTERNAL_BOOTIMAGE_ARGS) --output $@
-	$(hide) $(call assert-max-file-size,$@,$(BOARD_BOOTIMAGE_MAX_SIZE))
+	$(hide) $(call assert-max-image-size,$@,$(BOARD_BOOTIMAGE_PARTITION_SIZE),raw)
 endif # TARGET_BOOTIMAGE_USE_EXT2
 
 else	# TARGET_NO_KERNEL
@@ -434,12 +449,16 @@ $(eval $(call combine-notice-files, \
 # the module processing has already been done -- in fact, we used the
 # fact that all that has been done to get the list of modules that we
 # need notice files for.
-$(target_notice_file_html_gz): $(target_notice_file_html)
-	gzip -c $< > $@
+$(target_notice_file_html_gz): $(target_notice_file_html) | $(MINIGZIP)
+	$(hide) $(MINIGZIP) -9 < $< > $@
 installed_notice_html_gz := $(TARGET_OUT)/etc/NOTICE.html.gz
 $(installed_notice_html_gz): $(target_notice_file_html_gz) | $(ACP)
 	$(copy-file-to-target)
+
+# if we've been run my mm, mmm, etc, don't reinstall this every time
+ifeq ($(ONE_SHOT_MAKEFILE),)
 ALL_DEFAULT_INSTALLED_MODULES += $(installed_notice_html_gz)
+endif
 
 # The kernel isn't really a module, so to get its module file in there, we
 # make the target NOTICE files depend on this particular file too, which will
@@ -452,6 +471,23 @@ $(kernel_notice_file): \
 	$(hide) $(ACP) $< $@
 
 
+# -----------------------------------------------------------------
+# Build a keystore with the authorized keys in it, used to verify the
+# authenticity of downloaded OTA packages.
+#
+# This rule adds to ALL_DEFAULT_INSTALLED_MODULES, so it needs to come
+# before the rules that use that variable to build the image.
+ALL_DEFAULT_INSTALLED_MODULES += $(TARGET_OUT_ETC)/security/otacerts.zip
+$(TARGET_OUT_ETC)/security/otacerts.zip: KEY_CERT_PAIR := $(DEFAULT_KEY_CERT_PAIR)
+$(TARGET_OUT_ETC)/security/otacerts.zip: $(addsuffix .x509.pem,$(DEFAULT_KEY_CERT_PAIR))
+	$(hide) rm -f $@
+	$(hide) mkdir -p $(dir $@)
+	$(hide) zip -qj $@ $<
+
+.PHONY: otacerts
+otacerts: $(TARGET_OUT_ETC)/security/otacerts.zip
+
+
 # #################################################################
 # Targets for user images
 # #################################################################
@@ -462,6 +498,95 @@ INTERNAL_MKUSERFS := $(MKEXT2IMG)
 else
 INTERNAL_MKUSERFS := $(MKYAFFS2)
 endif
+
+# -----------------------------------------------------------------
+# Recovery image
+
+# If neither TARGET_NO_KERNEL nor TARGET_NO_RECOVERY are true
+ifeq (,$(filter true, $(TARGET_NO_KERNEL) $(TARGET_NO_RECOVERY) $(BUILD_TINY_ANDROID)))
+
+INSTALLED_RECOVERYIMAGE_TARGET := $(PRODUCT_OUT)/recovery.img
+
+recovery_initrc := $(call include-path-for, recovery)/etc/init.rc
+recovery_kernel := $(INSTALLED_KERNEL_TARGET) # same as a non-recovery system
+recovery_ramdisk := $(PRODUCT_OUT)/ramdisk-recovery.img
+recovery_build_prop := $(INSTALLED_BUILD_PROP_TARGET)
+recovery_binary := $(call intermediates-dir-for,EXECUTABLES,recovery)/recovery
+recovery_resources_common := $(call include-path-for, recovery)/res
+recovery_resources_private := $(strip $(wildcard $(TARGET_DEVICE_DIR)/recovery/res))
+recovery_resource_deps := $(shell find $(recovery_resources_common) \
+  $(recovery_resources_private) -type f)
+
+ifeq ($(recovery_resources_private),)
+  $(info No private recovery resources for TARGET_DEVICE $(TARGET_DEVICE))
+endif
+
+INTERNAL_RECOVERYIMAGE_ARGS := \
+	$(addprefix --second ,$(INSTALLED_2NDBOOTLOADER_TARGET)) \
+	--kernel $(recovery_kernel) \
+	--ramdisk $(recovery_ramdisk)
+
+# Assumes this has already been stripped
+ifdef BOARD_KERNEL_CMDLINE
+  INTERNAL_RECOVERYIMAGE_ARGS += --cmdline "$(BOARD_KERNEL_CMDLINE)"
+endif
+ifdef BOARD_KERNEL_BASE
+  INTERNAL_RECOVERYIMAGE_ARGS += --base $(BOARD_KERNEL_BASE)
+endif
+
+# Keys authorized to sign OTA packages this build will accept.  The
+# build always uses test-keys for this; release packaging tools will
+# substitute other keys for this one.
+OTA_PUBLIC_KEYS := $(SRC_TARGET_DIR)/product/security/testkey.x509.pem
+
+# Generate a file containing the keys that will be read by the
+# recovery binary.
+RECOVERY_INSTALL_OTA_KEYS := \
+	$(call intermediates-dir-for,PACKAGING,ota_keys)/keys
+DUMPKEY_JAR := $(HOST_OUT_JAVA_LIBRARIES)/dumpkey.jar
+$(RECOVERY_INSTALL_OTA_KEYS): PRIVATE_OTA_PUBLIC_KEYS := $(OTA_PUBLIC_KEYS)
+$(RECOVERY_INSTALL_OTA_KEYS): $(OTA_PUBLIC_KEYS) $(DUMPKEY_JAR)
+	@echo "DumpPublicKey: $@ <= $(PRIVATE_OTA_PUBLIC_KEYS)"
+	@rm -rf $@
+	@mkdir -p $(dir $@)
+	java -jar $(DUMPKEY_JAR) $(PRIVATE_OTA_PUBLIC_KEYS) > $@
+
+$(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTFS) $(MKBOOTIMG) $(MINIGZIP) \
+		$(INSTALLED_RAMDISK_TARGET) \
+		$(INSTALLED_BOOTIMAGE_TARGET) \
+		$(recovery_binary) \
+		$(recovery_initrc) $(recovery_kernel) \
+		$(INSTALLED_2NDBOOTLOADER_TARGET) \
+		$(recovery_build_prop) $(recovery_resource_deps) \
+		$(RECOVERY_INSTALL_OTA_KEYS)
+	@echo ----- Making recovery image ------
+	rm -rf $(TARGET_RECOVERY_OUT)
+	mkdir -p $(TARGET_RECOVERY_OUT)
+	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)
+	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/etc
+	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/tmp
+	echo Copying baseline ramdisk...
+	cp -R $(TARGET_ROOT_OUT) $(TARGET_RECOVERY_OUT)
+	echo Modifying ramdisk contents...
+	cp -f $(recovery_initrc) $(TARGET_RECOVERY_ROOT_OUT)/
+	cp -f $(recovery_binary) $(TARGET_RECOVERY_ROOT_OUT)/sbin/
+	cp -rf $(recovery_resources_common) $(TARGET_RECOVERY_ROOT_OUT)/
+	$(foreach item,$(recovery_resources_private), \
+	  cp -rf $(item) $(TARGET_RECOVERY_ROOT_OUT)/)
+	cp $(RECOVERY_INSTALL_OTA_KEYS) $(TARGET_RECOVERY_ROOT_OUT)/res/keys
+	cat $(INSTALLED_DEFAULT_PROP_TARGET) $(recovery_build_prop) \
+	        > $(TARGET_RECOVERY_ROOT_OUT)/default.prop
+	$(MKBOOTFS) $(TARGET_RECOVERY_ROOT_OUT) | $(MINIGZIP) > $(recovery_ramdisk)
+	$(MKBOOTIMG) $(INTERNAL_RECOVERYIMAGE_ARGS) --output $@
+	@echo ----- Made recovery image -------- $@
+	$(hide) $(call assert-max-image-size,$@,$(BOARD_RECOVERYIMAGE_PARTITION_SIZE),raw)
+
+else
+INSTALLED_RECOVERYIMAGE_TARGET :=
+endif
+
+.PHONY: recoveryimage
+recoveryimage: $(INSTALLED_RECOVERYIMAGE_TARGET)
 
 # -----------------------------------------------------------------
 # system yaffs image
@@ -518,10 +643,28 @@ else
   SYSTEMIMAGE_SOURCE_DIR := $(TARGET_OUT)
 endif
 
-$(INSTALLED_SYSTEMIMAGE): $(BUILT_SYSTEMIMAGE) | $(ACP)
+# The system partition needs room for the recovery image as well.  We
+# now store the recovery image as a binary patch using the boot image
+# as the source (since they are very similar).  Generate the patch so
+# we can see how big it's going to be, and include that in the system
+# image size check calculation.
+ifneq ($(INSTALLED_RECOVERYIMAGE_TARGET),)
+intermediates := $(call intermediates-dir-for,PACKAGING,recovery_patch)
+RECOVERY_FROM_BOOT_PATCH := $(intermediates)/recovery_from_boot.p
+$(RECOVERY_FROM_BOOT_PATCH): $(INSTALLED_RECOVERYIMAGE_TARGET) \
+                             $(INSTALLED_BOOTIMAGE_TARGET) \
+			     $(HOST_OUT_EXECUTABLES)/imgdiff \
+	                     $(HOST_OUT_EXECUTABLES)/bsdiff
+	@echo "Construct recovery from boot"
+	mkdir -p $(dir $@)
+	PATH=$(HOST_OUT_EXECUTABLES):$$PATH $(HOST_OUT_EXECUTABLES)/imgdiff $(INSTALLED_BOOTIMAGE_TARGET) $(INSTALLED_RECOVERYIMAGE_TARGET) $@
+endif
+
+
+$(INSTALLED_SYSTEMIMAGE): $(BUILT_SYSTEMIMAGE) $(RECOVERY_FROM_BOOT_PATCH) | $(ACP)
 	@echo "Install system fs image: $@"
 	$(copy-file-to-target)
-	$(hide) $(call assert-max-file-size,$@,$(BOARD_SYSTEMIMAGE_MAX_SIZE))
+	$(hide) $(call assert-max-image-size,$@ $(RECOVERY_FROM_BOOT_PATCH),$(BOARD_SYSTEMIMAGE_PARTITION_SIZE),yaffs)
 
 systemimage: $(INSTALLED_SYSTEMIMAGE)
 
@@ -530,7 +673,7 @@ systemimage-nodeps snod: $(filter-out systemimage-nodeps snod,$(MAKECMDGOALS)) \
 	            | $(INTERNAL_MKUSERFS)
 	@echo "make $@: ignoring dependencies"
 	$(call build-systemimage-target,$(INSTALLED_SYSTEMIMAGE))
-	$(hide) $(call assert-max-file-size,$(INSTALLED_SYSTEMIMAGE),$(BOARD_SYSTEMIMAGE_MAX_SIZE))
+	$(hide) $(call assert-max-image-size,$(INSTALLED_SYSTEMIMAGE),$(BOARD_SYSTEMIMAGE_PARTITION_SIZE),yaffs)
 
 #######
 ## system tarball
@@ -567,7 +710,7 @@ define build-userdataimage-target
     $(call pretty,"Target userdata fs image: $(INSTALLED_USERDATAIMAGE_TARGET)")
     @mkdir -p $(TARGET_OUT_DATA)
     $(call build-userimage-ext2-target,$(TARGET_OUT_DATA),$(INSTALLED_USERDATAIMAGE_TARGET),userdata,)
-    $(hide) $(call assert-max-file-size,$(INSTALLED_USERDATAIMAGE_TARGET),$(BOARD_USERDATAIMAGE_MAX_SIZE))
+    $(hide) $(call assert-max-image-size,$(INSTALLED_USERDATAIMAGE_TARGET),$(BOARD_USERDATAIMAGE_PARTITION_SIZE),yaffs)
 endef
 
 else # TARGET_USERIMAGES_USE_EXT2 != true
@@ -577,7 +720,7 @@ define build-userdataimage-target
     $(call pretty,"Target userdata fs image: $(INSTALLED_USERDATAIMAGE_TARGET)")
     @mkdir -p $(TARGET_OUT_DATA)
     $(hide) $(MKYAFFS2) $(TARGET_OUT_DATA) $(INSTALLED_USERDATAIMAGE_TARGET)
-    $(hide) $(call assert-max-file-size,$(INSTALLED_USERDATAIMAGE_TARGET),$(BOARD_USERDATAIMAGE_MAX_SIZE))
+    $(hide) $(call assert-max-image-size,$(INSTALLED_USERDATAIMAGE_TARGET),$(BOARD_USERDATAIMAGE_PARTITION_SIZE),yaffs)
 endef
 endif # TARGET_USERIMAGES_USE_EXT2
 
@@ -614,72 +757,6 @@ userdatatarball-nodeps: $(FS_GET_STATS)
 	$(build-userdatatarball-target)
 
 
-# If neither TARGET_NO_KERNEL nor TARGET_NO_RECOVERY are true
-ifeq (,$(filter true, $(TARGET_NO_KERNEL) $(TARGET_NO_RECOVERY)))
-
-# -----------------------------------------------------------------
-# Recovery image
-INSTALLED_RECOVERYIMAGE_TARGET := $(PRODUCT_OUT)/recovery.img
-
-recovery_initrc := $(call include-path-for, recovery)/etc/init.rc
-recovery_kernel := $(INSTALLED_KERNEL_TARGET) # same as a non-recovery system
-recovery_ramdisk := $(PRODUCT_OUT)/ramdisk-recovery.img
-recovery_build_prop := $(INSTALLED_BUILD_PROP_TARGET)
-recovery_binary := $(call intermediates-dir-for,EXECUTABLES,recovery)/recovery
-recovery_resources_common := $(call include-path-for, recovery)/res
-recovery_resources_private := $(strip $(wildcard $(TARGET_DEVICE_DIR)/recovery/res))
-recovery_resource_deps := $(shell find $(recovery_resources_common) \
-  $(recovery_resources_private) -type f)
-
-ifeq ($(recovery_resources_private),)
-  $(info No private recovery resources for TARGET_DEVICE $(TARGET_DEVICE))
-endif
-
-INTERNAL_RECOVERYIMAGE_ARGS := \
-	$(addprefix --second ,$(INSTALLED_2NDBOOTLOADER_TARGET)) \
-	--kernel $(recovery_kernel) \
-	--ramdisk $(recovery_ramdisk)
-
-# Assumes this has already been stripped
-ifdef BOARD_KERNEL_CMDLINE
-  INTERNAL_RECOVERYIMAGE_ARGS += --cmdline "$(BOARD_KERNEL_CMDLINE)"
-endif
-
-$(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTFS) $(MKBOOTIMG) \
-		$(INSTALLED_RAMDISK_TARGET) \
-		$(INSTALLED_BOOTIMAGE_TARGET) \
-		$(recovery_binary) \
-		$(recovery_initrc) $(recovery_kernel) \
-		$(INSTALLED_2NDBOOTLOADER_TARGET) \
-		$(recovery_build_prop) $(recovery_resource_deps)
-	@echo ----- Making recovery image ------
-	rm -rf $(TARGET_RECOVERY_OUT)
-	mkdir -p $(TARGET_RECOVERY_OUT)
-	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)
-	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/etc
-	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/tmp
-	echo Copying baseline ramdisk...
-	cp -R $(TARGET_ROOT_OUT) $(TARGET_RECOVERY_OUT)
-	echo Modifying ramdisk contents...
-	cp -f $(recovery_initrc) $(TARGET_RECOVERY_ROOT_OUT)/
-	cp -f $(recovery_binary) $(TARGET_RECOVERY_ROOT_OUT)/sbin/
-	cp -rf $(recovery_resources_common) $(TARGET_RECOVERY_ROOT_OUT)/
-	$(foreach item,$(recovery_resources_private), \
-	  cp -rf $(item) $(TARGET_RECOVERY_ROOT_OUT)/)
-	cat $(INSTALLED_DEFAULT_PROP_TARGET) $(recovery_build_prop) \
-	        > $(TARGET_RECOVERY_ROOT_OUT)/default.prop
-	$(MKBOOTFS) $(TARGET_RECOVERY_ROOT_OUT) | gzip > $(recovery_ramdisk)
-	$(MKBOOTIMG) $(INTERNAL_RECOVERYIMAGE_ARGS) --output $@
-	@echo ----- Made recovery image -------- $@
-	$(hide) $(call assert-max-file-size,$@,$(BOARD_RECOVERYIMAGE_MAX_SIZE))
-
-else
-INSTALLED_RECOVERYIMAGE_TARGET :=
-endif
-
-.PHONY: recoveryimage
-recoveryimage: $(INSTALLED_RECOVERYIMAGE_TARGET)
-
 # -----------------------------------------------------------------
 # bring in the installer image generation defines if necessary
 ifeq ($(TARGET_USE_DISKINSTALLER),true)
@@ -687,123 +764,20 @@ include bootable/diskinstaller/config.mk
 endif
 
 # -----------------------------------------------------------------
-# OTA update package
-name := $(TARGET_PRODUCT)
-ifeq ($(TARGET_BUILD_TYPE),debug)
-  name := $(name)_debug
-endif
-name := $(name)-ota-$(FILE_NAME_TAG)
+# host tools needed to build OTA packages
 
-INTERNAL_OTA_PACKAGE_TARGET := $(PRODUCT_OUT)/$(name).zip
-INTERNAL_OTA_INTERMEDIATES_DIR := $(call intermediates-dir-for,PACKAGING,ota)
-
-# If neither TARGET_NO_KERNEL nor TARGET_NO_RECOVERY are true
-ifeq (,$(filter true, $(TARGET_NO_KERNEL) $(TARGET_NO_RECOVERY)))
-INTERNAL_OTA_RECOVERYIMAGE_TARGET := $(INTERNAL_OTA_INTERMEDIATES_DIR)/system/recovery.img
-else
-INTERNAL_OTA_RECOVERYIMAGE_TARGET :=
-endif
-INTERNAL_OTA_SCRIPT_TARGET := $(INTERNAL_OTA_INTERMEDIATES_DIR)/META-INF/com/google/android/update-script
-
-# Sign OTA packages with the test key by default.
-# Actual product deliverables will be re-signed by hand.
-private_key := $(SRC_TARGET_DIR)/product/security/testkey.pk8
-certificate := $(SRC_TARGET_DIR)/product/security/testkey.x509.pem
-$(INTERNAL_OTA_PACKAGE_TARGET): $(private_key) $(certificate) $(SIGNAPK_JAR)
-$(INTERNAL_OTA_PACKAGE_TARGET): PRIVATE_PRIVATE_KEY := $(private_key)
-$(INTERNAL_OTA_PACKAGE_TARGET): PRIVATE_CERTIFICATE := $(certificate)
-
-# Depending on INSTALLED_SYSTEMIMAGE guarantees that SYSTEMIMAGE_SOURCE_DIR
-# is up-to-date.  We use jar instead of zip so that we can use the -C
-# switch to avoid cd-ing all over the place.
-# TODO: Make our own jar-creation tool to avoid all these shenanigans.
-$(INTERNAL_OTA_PACKAGE_TARGET): \
-		$(INTERNAL_OTA_SCRIPT_TARGET) \
-		$(INTERNAL_OTA_RECOVERYIMAGE_TARGET) \
-		$(INSTALLED_BOOTIMAGE_TARGET) \
-		$(INSTALLED_RADIOIMAGE_TARGET) \
-		$(INSTALLED_ANDROID_INFO_TXT_TARGET) \
-		$(INSTALLED_SYSTEMIMAGE)
-	@echo "Package OTA: $@"
-	$(hide) rm -rf $@
-	$(hide) jar cf $@ \
-	        $(foreach item, \
-	                $(INSTALLED_BOOTIMAGE_TARGET) \
-	                $(INSTALLED_RADIOIMAGE_TARGET) \
-	                $(INSTALLED_ANDROID_INFO_TXT_TARGET), \
-	            -C $(dir $(item)) $(notdir $(item))) \
-	            -C $(INTERNAL_OTA_INTERMEDIATES_DIR) .
-	$(hide) find $(SYSTEMIMAGE_SOURCE_DIR) -type f -print | \
-	        sed 's|^$(dir $(SYSTEMIMAGE_SOURCE_DIR))|-C & |' | \
-	        xargs jar uf $@
-	$(hide) if jar tf $@ | egrep '.{65}' >&2; then \
-	            echo "Path too long (>64 chars) for OTA update" >&2; \
-	            exit 1; \
-	        fi
-	$(sign-package)
-
-$(INTERNAL_OTA_SCRIPT_TARGET): \
-		$(HOST_OUT_EXECUTABLES)/make-update-script \
-		$(INSTALLED_ANDROID_INFO_TXT_TARGET) \
-		$(INSTALLED_SYSTEMIMAGE)
-	@mkdir -p $(dir $@)
-	@rm -rf $@
-	@echo "Update script: $@"
-	$(hide) TARGET_DEVICE=$(TARGET_DEVICE) \
-	        $< $(SYSTEMIMAGE_SOURCE_DIR) \
-	           $(INSTALLED_ANDROID_INFO_TXT_TARGET) \
-	        > $@
-
-ifneq (,$(INTERNAL_OTA_RECOVERYIMAGE_TARGET))
-# This copy is so recovery.img can be in /system within the OTA package.
-# That way it gets installed into the system image, which in turn installs it.
-$(INTERNAL_OTA_RECOVERYIMAGE_TARGET): $(INSTALLED_RECOVERYIMAGE_TARGET) | $(ACP)
-	@mkdir -p $(dir $@)
-	$(hide) $(ACP) $< $@
-endif
-
-.PHONY: otapackage
-otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
-
-# Keys authorized to sign OTA packages this build will accept.
-ifeq ($(INCLUDE_TEST_OTA_KEYS),true)
-  OTA_PUBLIC_KEYS := \
-  	$(sort $(SRC_TARGET_DIR)/product/security/testkey.x509.pem $(OTA_PUBLIC_KEYS))
-endif
-
-ifeq ($(OTA_PUBLIC_KEYS),)
-  $(error No OTA_PUBLIC_KEYS defined)
-endif
-
-# Build a keystore with the authorized keys in it.
-# java/android/android/server/checkin/UpdateVerifier.java uses this.
-ALL_DEFAULT_INSTALLED_MODULES += $(TARGET_OUT_ETC)/security/otacerts.zip
-$(TARGET_OUT_ETC)/security/otacerts.zip: $(OTA_PUBLIC_KEYS)
-	$(hide) rm -f $@
-	$(hide) mkdir -p $(dir $@)
-	zip -qj $@ $(OTA_PUBLIC_KEYS)
-
-# The device does not support JKS.
-# $(hide) for f in $(OTA_PUBLIC_KEYS); do \
-#   echo "keytool: $@ <= $$f" && \
-#   keytool -keystore $@ -storepass $(notdir $@) -noprompt \
-#           -import -file $$f -alias $(notdir $$f) || exit 1; \
-# done
-
-ifdef RECOVERY_INSTALL_OTA_KEYS_INC
-# Generate a C-includable file containing the keys.
-# RECOVERY_INSTALL_OTA_KEYS_INC is defined by recovery/Android.mk.
-# *** THIS IS A TOTAL HACK; EXECUTABLES MUST NOT CHANGE BETWEEN DIFFERENT
-#     PRODUCTS/BUILD TYPES. ***
-# TODO: make recovery read the keys from an external file.
-DUMPKEY_JAR := $(HOST_OUT_JAVA_LIBRARIES)/dumpkey.jar
-$(RECOVERY_INSTALL_OTA_KEYS_INC): PRIVATE_OTA_PUBLIC_KEYS := $(OTA_PUBLIC_KEYS)
-$(RECOVERY_INSTALL_OTA_KEYS_INC): $(OTA_PUBLIC_KEYS) $(DUMPKEY_JAR)
-	@echo "DumpPublicKey: $@ <= $(PRIVATE_OTA_PUBLIC_KEYS)"
-	@rm -rf $@
-	@mkdir -p $(dir $@)
-	$(hide) java -jar $(DUMPKEY_JAR) $(PRIVATE_OTA_PUBLIC_KEYS) > $@
-endif
+.PHONY: otatools
+otatools: $(HOST_OUT_EXECUTABLES)/minigzip \
+	  $(HOST_OUT_EXECUTABLES)/mkbootfs \
+	  $(HOST_OUT_EXECUTABLES)/mkbootimg \
+	  $(HOST_OUT_EXECUTABLES)/fs_config \
+	  $(HOST_OUT_EXECUTABLES)/mkyaffsimage \
+	  $(HOST_OUT_EXECUTABLES)/zipalign \
+	  $(HOST_OUT_EXECUTABLES)/aapt \
+	  $(HOST_OUT_EXECUTABLES)/bsdiff \
+	  $(HOST_OUT_EXECUTABLES)/imgdiff \
+	  $(HOST_OUT_JAVA_LIBRARIES)/dumpkey.jar \
+	  $(HOST_OUT_JAVA_LIBRARIES)/signapk.jar
 
 # -----------------------------------------------------------------
 # A zip of the directories that map to the target filesystem.
@@ -833,21 +807,30 @@ define package_files-copy-root
 endef
 
 built_ota_tools := \
- 	$(call intermediates-dir-for,EXECUTABLES,applypatch)/applypatch \
-	$(call intermediates-dir-for,EXECUTABLES,check_prereq)/check_prereq
+	$(call intermediates-dir-for,EXECUTABLES,applypatch)/applypatch \
+	$(call intermediates-dir-for,EXECUTABLES,applypatch_static)/applypatch_static \
+	$(call intermediates-dir-for,EXECUTABLES,check_prereq)/check_prereq \
+	$(call intermediates-dir-for,EXECUTABLES,updater)/updater
 $(BUILT_TARGET_FILES_PACKAGE): PRIVATE_OTA_TOOLS := $(built_ota_tools)
+
+$(BUILT_TARGET_FILES_PACKAGE): PRIVATE_RECOVERY_API_VERSION := $(RECOVERY_API_VERSION)
+
+ifeq ($(TARGET_RELEASETOOLS_EXTENSIONS),)
+# default to common dir for device vendor
+$(BUILT_TARGET_FILES_PACKAGE): tool_extensions := $(TARGET_DEVICE_DIR)/../common
+else
+$(BUILT_TARGET_FILES_PACKAGE): tool_extensions := $(TARGET_RELEASETOOLS_EXTENSIONS)
+endif
 
 # Depending on the various images guarantees that the underlying
 # directories are up-to-date.
 $(BUILT_TARGET_FILES_PACKAGE): \
-		$(INTERNAL_OTA_SCRIPT_TARGET) \
 		$(INSTALLED_BOOTIMAGE_TARGET) \
 		$(INSTALLED_RADIOIMAGE_TARGET) \
 		$(INSTALLED_RECOVERYIMAGE_TARGET) \
-		$(BUILT_SYSTEMIMAGE) \
+		$(INSTALLED_SYSTEMIMAGE) \
 		$(INSTALLED_USERDATAIMAGE_TARGET) \
 		$(INSTALLED_ANDROID_INFO_TXT_TARGET) \
-		$(INTERNAL_OTA_SCRIPT_TARGET) \
 		$(built_ota_tools) \
 		$(APKCERTS_FILE) \
 		| $(ACP)
@@ -868,6 +851,9 @@ endif
 ifdef BOARD_KERNEL_CMDLINE
 	$(hide) echo "$(BOARD_KERNEL_CMDLINE)" > $(zip_root)/RECOVERY/cmdline
 endif
+ifdef BOARD_KERNEL_BASE
+	$(hide) echo "$(BOARD_KERNEL_BASE)" > $(zip_root)/RECOVERY/base
+endif
 	@# Components of the boot image
 	$(hide) mkdir -p $(zip_root)/BOOT
 	$(hide) $(call package_files-copy-root, \
@@ -882,11 +868,12 @@ endif
 ifdef BOARD_KERNEL_CMDLINE
 	$(hide) echo "$(BOARD_KERNEL_CMDLINE)" > $(zip_root)/BOOT/cmdline
 endif
-ifdef INSTALLED_RADIOIMAGE_TARGET
-	@# The radio image
-	$(hide) mkdir -p $(zip_root)/RADIO
-	$(hide) $(ACP) $(INSTALLED_RADIOIMAGE_TARGET) $(zip_root)/RADIO/image
+ifdef BOARD_KERNEL_BASE
+	$(hide) echo "$(BOARD_KERNEL_BASE)" > $(zip_root)/BOOT/base
 endif
+	$(hide) $(foreach t,$(INSTALLED_RADIOIMAGE_TARGET),\
+	            mkdir -p $(zip_root)/RADIO; \
+	            $(ACP) $(t) $(zip_root)/RADIO/$(notdir $(t));)
 	@# Contents of the system image
 	$(hide) $(call package_files-copy-root, \
 		$(SYSTEMIMAGE_SOURCE_DIR),$(zip_root)/SYSTEM)
@@ -895,18 +882,63 @@ endif
 		$(TARGET_OUT_DATA),$(zip_root)/DATA)
 	@# Extra contents of the OTA package
 	$(hide) mkdir -p $(zip_root)/OTA/bin
-	$(hide) $(call package_files-copy-root, \
-		$(INTERNAL_OTA_INTERMEDIATES_DIR),$(zip_root)/OTA)
 	$(hide) $(ACP) $(INSTALLED_ANDROID_INFO_TXT_TARGET) $(zip_root)/OTA/
 	$(hide) $(ACP) $(PRIVATE_OTA_TOOLS) $(zip_root)/OTA/bin/
-	@# Files that don't end up in any images, but are necessary to
+	@# Files that do not end up in any images, but are necessary to
 	@# build them.
 	$(hide) mkdir -p $(zip_root)/META
 	$(hide) $(ACP) $(APKCERTS_FILE) $(zip_root)/META/apkcerts.txt
+	$(hide)	echo "$(PRODUCT_OTA_PUBLIC_KEYS)" > $(zip_root)/META/otakeys.txt
+	$(hide) echo "$(PRIVATE_RECOVERY_API_VERSION)" > $(zip_root)/META/recovery-api-version.txt
+	$(hide) echo "blocksize $(BOARD_FLASH_BLOCK_SIZE)" > $(zip_root)/META/imagesizes.txt
+	$(hide) echo "boot $(call image-size-from-data-size,$(BOARD_BOOTIMAGE_PARTITION_SIZE))" >> $(zip_root)/META/imagesizes.txt
+	$(hide) echo "recovery $(call image-size-from-data-size,$(BOARD_RECOVERYIMAGE_PARTITION_SIZE))" >> $(zip_root)/META/imagesizes.txt
+	$(hide) echo "system $(call image-size-from-data-size,$(BOARD_SYSTEMIMAGE_PARTITION_SIZE))" >> $(zip_root)/META/imagesizes.txt
+	$(hide) echo "userdata $(call image-size-from-data-size,$(BOARD_USERDATAIMAGE_PARTITION_SIZE))" >> $(zip_root)/META/imagesizes.txt
+	$(hide) echo "$(tool_extensions)" > $(zip_root)/META/tool-extensions.txt
 	@# Zip everything up, preserving symlinks
 	$(hide) (cd $(zip_root) && zip -qry ../$(notdir $@) .)
 
 target-files-package: $(BUILT_TARGET_FILES_PACKAGE)
+
+# -----------------------------------------------------------------
+# OTA update package
+
+ifneq ($(TARGET_SIMULATOR),true)
+ifneq ($(TARGET_PRODUCT),sdk)
+ifneq ($(TARGET_PRODUCT),generic)
+
+name := $(TARGET_PRODUCT)
+ifeq ($(TARGET_BUILD_TYPE),debug)
+  name := $(name)_debug
+endif
+name := $(name)-ota-$(FILE_NAME_TAG)
+
+INTERNAL_OTA_PACKAGE_TARGET := $(PRODUCT_OUT)/$(name).zip
+
+$(INTERNAL_OTA_PACKAGE_TARGET): KEY_CERT_PAIR := $(DEFAULT_KEY_CERT_PAIR)
+
+ifeq ($(TARGET_OTA_SCRIPT_MODE),)
+# default to "auto"
+$(INTERNAL_OTA_PACKAGE_TARGET): scriptmode := auto
+else
+$(INTERNAL_OTA_PACKAGE_TARGET): scriptmode := $(TARGET_OTA_SCRIPT_MODE)
+endif
+
+$(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) otatools
+	@echo "Package OTA: $@"
+	$(hide) ./build/tools/releasetools/ota_from_target_files \
+	   -m $(scriptmode) \
+	   -p $(HOST_OUT) \
+           -k $(KEY_CERT_PAIR) \
+           $(BUILT_TARGET_FILES_PACKAGE) $@
+
+.PHONY: otapackage
+otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
+
+endif    # TARGET_PRODUCT != generic
+endif    # TARGET_PRODUCT != sdk
+endif    # TARGET_SIMULATOR != true
 
 # -----------------------------------------------------------------
 # installed file list
@@ -1009,14 +1041,8 @@ dalvikfiles: $(INTERNAL_DALVIK_MODULES)
 # -----------------------------------------------------------------
 # The update package
 
-INTERNAL_UPDATE_PACKAGE_FILES += \
-		$(INSTALLED_BOOTIMAGE_TARGET) \
-		$(INSTALLED_RECOVERYIMAGE_TARGET) \
-		$(INSTALLED_SYSTEMIMAGE) \
-		$(INSTALLED_USERDATAIMAGE_TARGET) \
-		$(INSTALLED_ANDROID_INFO_TXT_TARGET)
-
-ifneq ($(strip $(INTERNAL_UPDATE_PACKAGE_FILES)),)
+ifneq ($(TARGET_SIMULATOR),true)
+ifneq ($(TARGET_PRODUCT),sdk)
 
 name := $(TARGET_PRODUCT)
 ifeq ($(TARGET_BUILD_TYPE),debug)
@@ -1026,13 +1052,25 @@ name := $(name)-img-$(FILE_NAME_TAG)
 
 INTERNAL_UPDATE_PACKAGE_TARGET := $(PRODUCT_OUT)/$(name).zip
 
-$(INTERNAL_UPDATE_PACKAGE_TARGET): $(INTERNAL_UPDATE_PACKAGE_FILES)
-	@echo "Package: $@"
-	$(hide) zip -qj $@ $(INTERNAL_UPDATE_PACKAGE_FILES)
-
+ifeq ($(TARGET_RELEASETOOLS_EXTENSIONS),)
+# default to common dir for device vendor
+$(INTERNAL_UPDATE_PACKAGE_TARGET): extensions := $(TARGET_DEVICE_DIR)/../common
 else
-INTERNAL_UPDATE_PACKAGE_TARGET :=
+$(INTERNAL_UPDATE_PACKAGE_TARGET): extensions := $(TARGET_RELEASETOOLS_EXTENSIONS)
 endif
+
+$(INTERNAL_UPDATE_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) otatools
+	@echo "Package: $@"
+	$(hide) ./build/tools/releasetools/img_from_target_files \
+	   -s $(extensions) \
+	   -p $(HOST_OUT) \
+	   $(BUILT_TARGET_FILES_PACKAGE) $@
+
+.PHONY: updatepackage
+updatepackage: $(INTERNAL_UPDATE_PACKAGE_TARGET)
+
+endif    # TARGET_PRODUCT != sdk
+endif    # TARGET_SIMULATOR != true
 
 # -----------------------------------------------------------------
 # The emulator package
@@ -1116,7 +1154,9 @@ deps := \
 	$(target_notice_file_txt) \
 	$(tools_notice_file_txt) \
 	$(OUT_DOCS)/offline-sdk-timestamp \
-	$(INTERNAL_UPDATE_PACKAGE_TARGET) \
+	$(INSTALLED_SYSTEMIMAGE) \
+	$(INSTALLED_USERDATAIMAGE_TARGET) \
+	$(INSTALLED_RAMDISK_TARGET) \
 	$(INSTALLED_SDK_BUILD_PROP_TARGET) \
 	$(ATREE_FILES) \
 	$(atree_dir)/sdk.atree \
@@ -1158,7 +1198,7 @@ $(INTERNAL_SDK_TARGET): $(deps)
 				$(PRIVATE_DIR)/platforms/android-$(PLATFORM_VERSION)/images/NOTICE.txt && \
 		cp -f $(tools_notice_file_txt) $(PRIVATE_DIR)/tools/NOTICE.txt && \
 		HOST_OUT_EXECUTABLES=$(HOST_OUT_EXECUTABLES) HOST_OS=$(HOST_OS) \
-                development/tools/scripts/sdk_clean.sh $(PRIVATE_DIR) && \
+                development/build/tools/sdk_clean.sh $(PRIVATE_DIR) && \
 		chmod -R ug+rwX $(PRIVATE_DIR) && \
 		cd $(dir $@) && zip -rq $(notdir $@) $(PRIVATE_NAME) \
 	) || ( rm -rf $(PRIVATE_DIR) $@ && exit 44 )
