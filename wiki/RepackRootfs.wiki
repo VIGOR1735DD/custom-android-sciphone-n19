@@ -53,3 +53,9 @@ mkimage -A ARM -O Linux -T ramdisk -C gzip -a 0x00 -e 0x00 -n initramfs -d ramdi
 }}}
 
 5. copy this file together with other update files, flash your phone, see what happens.
+
+== Updating without losing your changes ==
+
+  # Download [http://custom-android-sciphone-n19.googlecode.com/files/updata-ramdisk.txt replacement for updata.txt] and rename it to `updata.txt`.
+  # Copy the renamed file to your sd card, along with your modified ramdisk.uimg
+  # Reboot your device and follow the flashing procedure.
