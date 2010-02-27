@@ -8,6 +8,8 @@ These are the guidelines that should be followed when adding the version number/
 
 = Details =
 
+[http://custom-android-sciphone-n19.googlecode.com/files/android-n19.png http://custom-android-sciphone-n19.googlecode.com/files/android-n19.png]
+
 == Image Creation ==
 
   * *Version name* (e.g. Cupcake, Donut, Eclair, etc.) should be put on the blank part above the androids.
