@@ -15,6 +15,7 @@
 ===Hacks===
 
  * [HardwareHacks Hardware Hacks]
+ * [Disassembling]
 
 ===Porting===
 
