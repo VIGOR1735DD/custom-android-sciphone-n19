@@ -33,6 +33,10 @@ $ repo init -u git://android.git.kernel.org/platform/manifest.git -b eclair
 
 This will get eclair branch of the Android source.  Download and wait for everything to finish.
 
+=== Moving baselines ===
+
+It appears that 'cupcake', 'donut', and 'eclair' branches are, in fact, head branches for these builds.  Therefore, patches we have in subversion here, get outdated, and fail compilation.  Instead of having moving base, we're working towards identifying static tags that we should be working from.   We should have an update in a few days.
+
 === Get Sciphone N19 patches ===
 
 Using your subversion client, get this projects branch that matches the branch of Android you downloaded:
@@ -62,7 +66,7 @@ tar jxcf armv4t-android-eabi-4.2.1.tar.bz2
 
 === Compiling ===
 
-Run 'make -j4' to build the whole android, from the 'platform' directory
+Run 'make -j4' to build the whole android, from the 'platform' directory.  "-j4" tells make to run 4 processes at the same time.  In case things just 'die' reduce this number.
 
 === Submit changes back here ===
 
