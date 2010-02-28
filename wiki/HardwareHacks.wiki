@@ -31,4 +31,8 @@ Power management chip: Dialog Semiconductor DA9030.
 || Camera Sensor || [http://www.ovt.com/products/detail.php?id=10 Omnivision OV2640] || Yes ||
 || [http://en.wikipedia.org/wiki/Multi-Chip_Module MCP] || K5D1G1G || Yes ||
 || Audio Codec || [http://www.asahi-kasei.co.jp/akm/en/product/ak4648/ak4648.html Asahi Kasei AK4648] || Yes ||
+|| DRAM? || Samsung K5D1G1GACA-A075 || Yes ||
+|| GSM Power Amplifier || [http://custom-android-sciphone-n19.googlecode.com/files/datasheet%20rf3196.pdf RFMD RF3196] || Yes ||
+|| Group of power amp? || K5L3316CAM || Yes ||
+|| Group of power amp? || 7880 || Yes ||
 || AGPS || Hammerhead PMB 2520 (Unconfirmed) || No ||
