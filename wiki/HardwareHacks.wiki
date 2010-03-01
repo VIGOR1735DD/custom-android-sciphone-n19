@@ -14,13 +14,7 @@ This is the landing page for the N19 hardware hacks. This is work in progress. F
 
 The main CPU is a Samsung `S3C2442` processor, clocked at 400mhz. Datasheets and other stuff about the CPU may be found at the [http://www.samsung.com/global/business/semiconductor/mobilesocProductDown.do?userId=pq.wang@besovideo.com#component_SC32442 Samsung's page].
 
-Reading from the init.rc script, there're capabilities for a GPS module on serial port 1 (serial port 0 is for the GSM module). The GPS module is referenced as a neo1973, and the `OpenMoko` Neo 1973 is using a UART GPS module named _Hammerhead PMB 2520_ AGPS from _Global Locate_, the people at `OpenMoko` have a driver for it at https://svn.openmoko.org/trunk/src/target/kernel/patches/gta01-power_control.patch implemented as a plugin for the GPSD daemon. Although there are no such device as _neo1973-pm-gps.0_ in _/sys/bus/platform/devices/_ folder. (note: *this is true*, because the [http://gpsd.berlios.de/ GPSD] plugins aren't kernel modules, they're implemented as a layer on top of the UART module, interpreting NMEA... much like xinetd, but less complicated... btw, probably any UART supporting NMEA conformant gps module can be used here).
-
-All this data has been gathered without actually opening the phone, later on, when i open up the phone i will post some photos and tell you all the details.
-
-The LCD Driver is [http://custom-android-sciphone-n19.googlecode.com/files/ILI9331.pdf Ilitek ILI9331].
-
-Power management chip: Dialog Semiconductor DA9030.
+~~Reading from the init.rc script, there're capabilities for a GPS module on serial port 1 (serial port 0 is for the GSM module). The GPS module is referenced as a neo1973, and the `OpenMoko` Neo 1973 is using a UART GPS module named _Hammerhead PMB 2520_ AGPS from _Global Locate_, the people at `OpenMoko` have a driver for it at https://svn.openmoko.org/trunk/src/target/kernel/patches/gta01-power_control.patch implemented as a plugin for the GPSD daemon. Although there are no such device as _neo1973-pm-gps.0_ in _/sys/bus/platform/devices/_ folder. (note: *this is true*, because the [http://gpsd.berlios.de/ GPSD] plugins aren't kernel modules, they're implemented as a layer on top of the UART module, interpreting NMEA... much like xinetd, but less complicated... btw, probably any UART supporting NMEA conformant gps module can be used here).~~ Looks like the project OpenMoko ditched the hammerhead IC. Altough the GSM module is from the same brand as the Hammerhead.
 
 =Bill of Materials for the N19=
 || *Item* || *Part No.* || *On-board?* ||
