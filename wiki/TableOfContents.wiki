@@ -8,7 +8,7 @@
  * [RepackRootfs How to repack Ramdisk]
  * [USBDriver USB Driver]
  * [USBEthernetGadget USB Ethernet Gadget]
- * [MicGain Micrphone Gain]
+ * [MicGain Microphone Gain]
  * [GoogleApps Google Apps]
  * [BusyBox busybox]
 
