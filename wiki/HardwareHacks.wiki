@@ -34,5 +34,5 @@ Power management chip: Dialog Semiconductor DA9030.
 || DRAM? || Samsung K5D1G1GACA-A075 || Yes ||
 || GSM Power Amplifier || [http://custom-android-sciphone-n19.googlecode.com/files/datasheet%20rf3196.pdf RFMD RF3196] || Yes ||
 || Group of power amp? || K5L3316CAM || Yes ||
-|| Group of power amp? || 7880 || Yes ||
+|| GSM Module || Infineon 7880 || Yes ||
 || AGPS || ? || No ||
