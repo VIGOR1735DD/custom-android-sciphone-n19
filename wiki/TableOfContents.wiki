@@ -12,6 +12,9 @@
  * [GoogleApps Google Apps]
  * [BusyBox busybox]
 
+===Apps===
+ * [http://code.google.com/p/tinykeyboard/ Tiny Keyboard for QVGA]
+
 ===Hacks===
 
  * [HardwareHacks Hardware Hacks]
