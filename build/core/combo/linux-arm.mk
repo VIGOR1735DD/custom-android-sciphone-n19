@@ -57,7 +57,7 @@ ARCH_ARM_HAVE_FFS := false
 
 DEFAULT_TARGET_CPU := arm920t
 
-arch_version_cflags := -march=armv4t -mtune=arm920t -D__ARM_ARCH_4T__
+arch_version_cflags := -march=armv4t -mtune=arm920t -D__ARM_ARCH_4T__ -D__ARM_ARCH_4__
 ifeq ($(strip $($(combo_target)TOOLS_PREFIX)),)
 $(combo_target)TOOLS_PREFIX := \
         prebuilt/$(HOST_PREBUILT_TAG)/toolchain/armv4t-android-eabi-4.2.1/bin/armv4t-android-eabi-
