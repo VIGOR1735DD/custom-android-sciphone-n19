@@ -496,7 +496,11 @@ ifeq ($(TARGET_USERIMAGES_USE_EXT2),true)
 include external/genext2fs/Config.mk
 INTERNAL_MKUSERFS := $(MKEXT2IMG)
 else
-INTERNAL_MKUSERFS := $(MKYAFFS2)
+  ifeq ($(TARGET_USERIMAGES_USE_YAFFS1),true)
+    INTERNAL_MKUSERFS := $(MKYAFFS1)
+  else 
+    INTERNAL_MKUSERFS := $(MKYAFFS2)
+  endif
 endif
 
 # -----------------------------------------------------------------
@@ -613,14 +617,24 @@ define build-systemimage-target
 endef
 
 else # TARGET_USERIMAGES_USE_EXT2 != true
-
+  ifeq ($(TARGET_USERIMAGES_USE_YAFFS1),true)
+## generate a yaffs1 image
+# $(1): output file
+define build-systemimage-target
+    @echo "Target system fs image: $(1)"
+    @mkdir -p $(dir $(1))
+    $(hide) $(MKYAFFS1) $(TARGET_OUT) $(1)
+endef
+  else # TARGET_USERIMAGES_USE_YAFFS1 != true
 ## generate a yaffs2 image
 # $(1): output file
 define build-systemimage-target
     @echo "Target system fs image: $(1)"
     @mkdir -p $(dir $(1))
-    $(hide) $(MKYAFFS2) $(TARGET_OUT) $(1)
+    $(hide) $(MKYAFFS2) -f $(TARGET_OUT) $(1)
 endef
+  endif # TARGET_USERIMAGES_USE_YAFFS1
+
 endif # TARGET_USERIMAGES_USE_EXT2
 
 $(BUILT_SYSTEMIMAGE_UNOPT): $(INTERNAL_SYSTEMIMAGE_FILES) $(INTERNAL_MKUSERFS)
@@ -715,13 +729,27 @@ endef
 
 else # TARGET_USERIMAGES_USE_EXT2 != true
 
+  ifeq ($(TARGET_USERIMAGES_USE_EXT1),true)
+## Generate a yaffs1 image
+define build-userdataimage-target
+    $(call pretty,"Target userdata fs image: $(INSTALLED_USERDATAIMAGE_TARGET)")
+    @mkdir -p $(TARGET_OUT_DATA)
+    $(hide) $(MKYAFFS1) $(TARGET_OUT_DATA) $(INSTALLED_USERDATAIMAGE_TARGET)
+    $(hide) $(call assert-max-image-size,$(INSTALLED_USERDATAIMAGE_TARGET),$(BOARD_USERDATAIMAGE_PARTITION_SIZE),yaffs)
+endef
+
+  else # TARGET_USERIMAGES_USE_YAFFS1 != true
+
 ## Generate a yaffs2 image
 define build-userdataimage-target
     $(call pretty,"Target userdata fs image: $(INSTALLED_USERDATAIMAGE_TARGET)")
     @mkdir -p $(TARGET_OUT_DATA)
-    $(hide) $(MKYAFFS2) $(TARGET_OUT_DATA) $(INSTALLED_USERDATAIMAGE_TARGET)
+    $(hide) $(MKYAFFS2) -f $(TARGET_OUT_DATA) $(INSTALLED_USERDATAIMAGE_TARGET)
     $(hide) $(call assert-max-image-size,$(INSTALLED_USERDATAIMAGE_TARGET),$(BOARD_USERDATAIMAGE_PARTITION_SIZE),yaffs)
 endef
+
+  endif
+
 endif # TARGET_USERIMAGES_USE_EXT2
 
 BUILT_USERDATAIMAGE_TARGET := $(PRODUCT_OUT)/userdata.img
@@ -771,6 +799,7 @@ otatools: $(HOST_OUT_EXECUTABLES)/minigzip \
 	  $(HOST_OUT_EXECUTABLES)/mkbootfs \
 	  $(HOST_OUT_EXECUTABLES)/mkbootimg \
 	  $(HOST_OUT_EXECUTABLES)/fs_config \
+	  $(HOST_OUT_EXECUTABLES)/mkyaffs2image \
 	  $(HOST_OUT_EXECUTABLES)/mkyaffsimage \
 	  $(HOST_OUT_EXECUTABLES)/zipalign \
 	  $(HOST_OUT_EXECUTABLES)/aapt \
