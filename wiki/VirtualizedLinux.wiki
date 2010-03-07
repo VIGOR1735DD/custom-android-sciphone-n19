@@ -26,7 +26,7 @@ As for the software we're going to need:
 
 = Details =
 
-This guide won't give you any specifics (for now). In fact, if you're a seasoned Linux/Windows user, with the previous software list you can figure out pretty much everything we're going do.
+This guide won't give you any specifics (for now). In fact, if you're a seasoned Linux/Windows user, with the previous software list you can figure out pretty much everything we're going to do.
 
 It boils down to:
   * Installing VirtualBox.
