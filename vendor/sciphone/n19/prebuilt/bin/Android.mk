@@ -14,6 +14,9 @@ TOOLS := \
   sort \
   swapon \
   tar
+
+PRODUCT_COPY_FILES += $(LOCAL_PATH)/flash_ramdisk.sh:system/bin/flash_ramdisk.sh \
+  $(LOCAL_PATH)/adbd:sbin/adbd
   
 include $(CLEAR_VARS)
 LOCAL_MODULE := busybox
