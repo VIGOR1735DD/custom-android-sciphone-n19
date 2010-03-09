@@ -7,11 +7,10 @@ Current status:
 [complete] 2. created system.img is in ext2 format with additional 128Mb of empty space.
 
 
-[not started] 3. ramdisk.img is not in the right format.
+[complete] 3. ramdisk.img is in the right format (uboot).
 
-I haven't looked much into it.  Current format is android's official version of it, not
-our weirdo n19 version -- need to fix that in the build system either in vendor folder or 
-hack build/core to allow defining alternative formats of ramdisk
+Must have uboot-mkimage package for debian/ubuntu installed (i don't want to waste time on getting this 
+to automatically compile)
 
 
 [not started] 4. init.rc is not ours.. need to add it under vendor tree, with our settings

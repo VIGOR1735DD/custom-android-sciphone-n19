@@ -260,10 +260,16 @@ BUILT_RAMDISK_TARGET := $(PRODUCT_OUT)/ramdisk.img
 
 # We just build this directly to the install location.
 INSTALLED_RAMDISK_TARGET := $(BUILT_RAMDISK_TARGET)
+ifeq ($(strip $(TARGET_RAMDISK_TOOLS)),uboot)
+$(INSTALLED_RAMDISK_TARGET): $(MKBOOTFS) $(INTERNAL_RAMDISK_FILES) | $(MINIGZIP)
+	$(call pretty,"Target ram disk: $@")
+	@cd $(TARGET_ROOT_OUT) && find . -print | cpio -o -H newc | gzip > ../ramdisk.img.gz
+	@cd $(PRODUCT_OUT) && mkimage -A ARM -O Linux -T ramdisk -C gzip -a 0x00 -e 0x00 -n initramfs -d ramdisk.img.gz ramdisk.img
+else # TARGET_RAMDISK_TOOLS != uboot
 $(INSTALLED_RAMDISK_TARGET): $(MKBOOTFS) $(INTERNAL_RAMDISK_FILES) | $(MINIGZIP)
 	$(call pretty,"Target ram disk: $@")
 	$(hide) $(MKBOOTFS) $(TARGET_ROOT_OUT) | $(MINIGZIP) > $@
-
+endif
 
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
 
