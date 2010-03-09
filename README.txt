@@ -43,5 +43,22 @@ hack build/core to allow defining alternative formats of ramdisk
 
 [not started] 12. many other things don't work but can't get to it to check
 
+
 [complete] 13. creation of boot image work in progress, requires perl with perlmagick / imagemagick installed
+(rename Android.mk from vendor/sciphone/n19/bootlogo/ if this causes problems)
+
+[not started] 14. fix USB mass storage
+
+
+[not started] 15. fix telephony
+
+
+[not started] 16. fix wifi
+
+
+[not started] 17. fix bluetooth
+
+
+[not started] 18. import apps
+
 
