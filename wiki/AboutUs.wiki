@@ -21,7 +21,7 @@ Here you'll find information about the project "owners". This is the page for th
 
 = nonsleepr =
 
-  * Real Name: 
-  * Country:
+  * Real Name: Alexandr Bessonov
+  * Country: Russia
   * Related links:
     * [http://code.google.com/p/tinykeyboard/ Tiny Keyboard]: An open source keyboard suited for QVGA displays.
