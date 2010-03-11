@@ -24,3 +24,8 @@
 
  * [Porting Porting Android to N19]
  * [VirtualizedLinux Configuring a virtual Linux box on your Windows system]
+
+===Other===
+
+ * [ProjectMembership How to join this project]
+ 
