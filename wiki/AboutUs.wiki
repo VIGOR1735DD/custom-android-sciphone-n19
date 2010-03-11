@@ -1,0 +1,27 @@
+#summary Information about the project Owners
+
+= Introduction =
+
+Here you'll find information about the project "owners". This is the page for the "shameless plug" of the authors :-D
+
+
+= sashapet =
+
+  * Real Name: 
+  * Country:
+  * Related links:
+
+= johnvillarzavatti =
+
+  * Real Name: John Miguel Villar Zavatti
+  * Country: Venezuela
+  * Related links:
+    * [http://www.villasilicio.com/deshojando.php Plucking Daisies]: A game for the Android platform.
+    * [http://code.google.com/p/tinykeyboard/ Tiny Keyboard]: An open source keyboard suited for QVGA displays.
+
+= nonsleepr =
+
+  * Real Name: 
+  * Country:
+  * Related links:
+    * [http://code.google.com/p/tinykeyboard/ Tiny Keyboard]: An open source keyboard suited for QVGA displays.
