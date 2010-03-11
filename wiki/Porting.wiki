@@ -90,26 +90,27 @@ Status: does not compile (anymore).  If anyone is enthusiastic on porting update
 
 == Eclair Port ==
 
-|| *No* || *Item*|| *Description* || *Status* ||
-|| 1. || Compilation || 'make' from top level completes without errors || complete ||
-|| 2. || system.img || system.img that gets created is in ext2 format with additional 128Mb of empty space. || completed ||
-|| 3. || ramdisk.img || ramdisk.img that gets created is in the right n19 format (uboot).  This creates dependency on uboot-mkimage debian/ubuntu package || completed ||
-|| 4. || init.rc || init.rc is not n19 specific, need to create correct one somewhere in vendor tree, with our settings || no started ||
-|| 5. || /system/etc/modules || binaries from stock phone integrated into the build || complete ||
-|| 6. || /system/etc || config files form /system/etc need to be correctly integrated || not started ||
-|| 7. || adbd & busybox || adbd and busybox copied, few 'applets' symlinked in /system/bin/ to busybox || complete ||
-|| 8. || install process || intended install is:<br/>- system.img onto sdcard, mounted via loop device from init.rc<br/>- data mounted from flash memory<br/>- /data/app and /data/dalvik-cache symbolic linked to /system folders (that reside on the loop device that's a file on sdcard) || in progress ||
-|| 9. || documentation || write installation guide || not started ||
-|| 10. || sdcard mounting || we need to inform vold that /sdcard has already been mounted, since we do it during boot || in progress ||
-|| 11. || keypad || keys don't work || in progress ||
-|| 12. || touchscreen || doesn't work || not started ||
-|| 13. || testing || find all other things that don't work || not started ||
-|| 14. || bootlogo || stamps image with version and includes as initlogo.rle.  requires perl and perlmagick debian/ubuntu packages || completed ||
-|| 15. || usb mass storage || doesn't work (unable to verify if it works) || not started ||
-|| 16. || telephony || doesn't work (unable to verify if we can make and receive calls, and if sim card is being used properly) || not started ||
-|| 17. || wifi || doesn't work (unable to verify) || not started ||
-|| 18. || bluetooth || doesn't work (unable to verify) || not started ||
-|| 19. || apps || n19 specific apps need to be imported (eg calibration) || not started ||
-|| 20. || gapps || google apps (contacts/calendar sync, market, googletalk, youtube, ...) || not started ||
-|| 21. || admin || consider using google code issues tracker for tracking these efforts || not started ||
- 
+Current status:
+
+|| *No* || *Status* || *Item*|| *Description* ||
+|| 1. || <font color="green">complete</font> || Compilation || 'make' from top level completes without errors ||
+|| 2. || <font color="green">complete</font> || system.img || system.img that gets created is in ext2 format with additional 128Mb of empty space. ||
+|| 3. || <font color="green">complete</font> || ramdisk.img || ramdisk.img that gets created is in the right n19 format (uboot).  This creates dependency on uboot-mkimage debian/ubuntu package ||
+|| 4. || <font color="red">not started</font> || init.rc || init.rc is not n19 specific, need to create correct one somewhere in vendor tree, with our settings ||
+|| 5. || <font color="green">complete</font> || /system/etc/modules || binaries from stock phone integrated into the build ||
+|| 6. || <font color="red">not started</font> || /system/etc || config files form /system/etc need to be correctly integrated ||
+|| 7. || <font color="green">complete</font> || adbd & busybox || adbd and busybox copied, few 'applets' symlinked in /system/bin/ to busybox ||
+|| 8. || <font color="orange">in progress</font> || install process || intended install is:<br/>- system.img onto sdcard, mounted via loop device from init.rc<br/>- data mounted from flash memory<br/>- /data/app and /data/dalvik-cache symbolic linked to /system folders<br/>(that reside on the loop device that's a file on sdcard) ||
+|| 9. || <font color="red">not started</font> || documentation || write installation guide ||
+|| 10. || <font color="orange">in progress</font> || sdcard mounting || we need to inform vold that /sdcard has already been mounted, since we do it during boot ||
+|| 11. || <font color="orange">in progress</font> || keypad || keys don't work ||
+|| 12. || <font color="red">not started</font> || touchscreen || doesn't work ||
+|| 13. || <font color="red">not started</font> || testing || find all other things that don't work ||
+|| 14. || <font color="green">complete</font> || bootlogo || stamps image with version and includes as initlogo.rle.  requires perl and perlmagick debian/ubuntu packages ||
+|| 15. || <font color="red">not started</font> || usb mass storage || doesn't work (unable to verify if it works) ||
+|| 16. || <font color="red">not started</font> || telephony || doesn't work (unable to verify if we can make and receive calls, and if sim card is being used properly) ||
+|| 17. || <font color="red">not started</font> || wifi || doesn't work (unable to verify) ||
+|| 18. || <font color="red">not started</font> || bluetooth || doesn't work (unable to verify) ||
+|| 19. || <font color="red">not started</font> || apps || n19 specific apps need to be imported (eg calibration) ||
+|| 20. || <font color="red">not started</font> || gapps || google apps (contacts/calendar sync, market, googletalk, youtube, ...) ||
+|| 21. || <font color="red">not started</font> || admin || consider using google code issues tracker for tracking these efforts ||
