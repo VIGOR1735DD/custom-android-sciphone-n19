@@ -98,15 +98,7 @@ Status: does not compile (anymore).  If anyone is enthusiastic on porting update
 || 5. || /system/etc/modules || binaries from stock phone integrated into the build || complete ||
 || 6. || /system/etc || config files form /system/etc need to be correctly integrated || not started ||
 || 7. || adbd & busybox || adbd and busybox copied, few 'applets' symlinked in /system/bin/ to busybox || complete ||
-|| 8. || install process || intended install is:  
-
-- system.img onto sdcard, mounted via loop device from init.rc
-
-- data mounted from flash memory
-
-- /data/app and /data/dalvik-cache symbolic linked to /system folders (that reside on the loop device that's a file on sdcard)
-
-|| in progress ||
+|| 8. || install process || intended install is:<br/>- system.img onto sdcard, mounted via loop device from init.rc<br/>- data mounted from flash memory<br/>- /data/app and /data/dalvik-cache symbolic linked to /system folders (that reside on the loop device that's a file on sdcard) || in progress ||
 || 9. || documentation || write installation guide || not started ||
 || 10. || sdcard mounting || we need to inform vold that /sdcard has already been mounted, since we do it during boot || in progress ||
 || 11. || keypad || keys don't work || in progress ||
