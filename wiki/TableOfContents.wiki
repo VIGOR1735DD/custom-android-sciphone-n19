@@ -6,6 +6,7 @@
 ===Mods===
 
  * [RepackRootfs How to repack Ramdisk]
+ * [BootloaderUpdate How to update Bootloader]
  * [USBDriver USB Driver]
  * [USBEthernetGadget USB Ethernet Gadget]
  * [MicGain Microphone Gain]
