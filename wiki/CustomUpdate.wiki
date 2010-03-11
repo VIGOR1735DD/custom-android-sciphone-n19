@@ -1,5 +1,5 @@
 #summary First custom build for Sciphone N19
-#labels Featured
+#labels Deprecated
 
 = Introduction =
 
