@@ -11,7 +11,7 @@ Google Code caters for 3 types of project members -- owners, committers, contrib
 
 == Everyone else == 
 
-Anyone with gmail account can post comments to wiki pages, and raise issues.  Please try to raise issues with this project, not the issues that are related to the hardware -- we can't change that.
+Anyone with gmail account can post comments to wiki pages, and raise issues.  Please try to raise issues with this project, not the issues that are related to the hardware nor other projects -- we can't change that.
 
 == Contributor ==
 
