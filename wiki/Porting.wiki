@@ -105,7 +105,7 @@ Current status:
 || 9. || <font color="red">not started</font> || documentation || write installation guide ||
 || 10. || <font color="orange">in progress</font> || sdcard mounting || we need to inform vold that /sdcard has already been mounted, since we do it during boot ||
 || 11. || <font color="orange">in progress</font> || keypad || keys don't work ||
-|| 12. || <font color="red">not started</font> || touchscreen || doesn't work ||
+|| 12. || <font color="orange">in progress</font> || touchscreen || View the wiki about TouchScreen ||
 || 13. || <font color="red">not started</font> || testing || find all other things that don't work ||
 || 14. || <font color="green">complete</font> || bootlogo || stamps image with version and includes as initlogo.rle.  requires perl and perlmagick debian/ubuntu packages ||
 || 15. || <font color="red">not started</font> || usb mass storage || doesn't work (unable to verify if it works) ||
