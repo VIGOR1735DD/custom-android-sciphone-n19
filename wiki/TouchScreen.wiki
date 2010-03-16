@@ -2,8 +2,8 @@
 
 = Scratchpad =
 
-I found this on the Logcat:
+Found this on the Logcat:
 
-I/EventHub(  434): New device: path=/dev/input/event0 name=S3C TouchScreen id=0x10001 (of 0x2) index=2 fd=51 classes=0x4
+`I/EventHub(  434): New device: path=/dev/input/event0 name=S3C TouchScreen id=0x10001 (of 0x2) index=2 fd=51 classes=0x4`
 
 Looks like the device is /dev/input/event0 now we got to find out what kernel module manages it.
