@@ -97,14 +97,14 @@ Current status:
 || 1. || <font color="green">complete</font> || Compilation || 'make' from top level completes without errors ||
 || 2. || <font color="green">complete</font> || system.img || system.img that gets created is in ext2 format with additional 128Mb of empty space. ||
 || 3. || <font color="green">complete</font> || ramdisk.img || ramdisk.img that gets created is in the right n19 format (uboot).  This creates dependency on uboot-mkimage debian/ubuntu package ||
-|| 4. || <font color="red">not started</font> || init.rc || init.rc is not n19 specific, need to create correct one somewhere in vendor tree, with our settings ||
+|| 4. || <font color="green">complete</font> || init.rc || init.rc is not n19 specific, need to create correct one somewhere in vendor tree, with our settings ||
 || 5. || <font color="green">complete</font> || /system/etc/modules || binaries from stock phone integrated into the build ||
-|| 6. || <font color="red">not started</font> || /system/etc || config files form /system/etc need to be correctly integrated ||
+|| 6. || <font color="green">complete</font> || /system/etc || config files form /system/etc need to be correctly integrated ||
 || 7. || <font color="green">complete</font> || adbd & busybox || adbd and busybox copied, few 'applets' symlinked in /system/bin/ to busybox ||
 || 8. || <font color="orange">in progress</font> || install process || intended install is:<br/>- system.img onto sdcard, mounted via loop device from init.rc<br/>- data mounted from flash memory<br/>- /data/app and /data/dalvik-cache symbolic linked to /system folders<br/>(that reside on the loop device that's a file on sdcard) ||
 || 9. || <font color="red">not started</font> || documentation || write installation guide ||
 || 10. || <font color="orange">in progress</font> || sdcard mounting || we need to inform vold that /sdcard has already been mounted, since we do it during boot ||
-|| 11. || <font color="orange">in progress</font> || keypad || View the wiki about KeyPad ||
+|| 11. || <font color="green">complete</font> || keypad || View the wiki about KeyPad ||
 || 12. || <font color="orange">in progress</font> || touchscreen || View the wiki about TouchScreen ||
 || 13. || <font color="red">not started</font> || testing || find all other things that don't work ||
 || 14. || <font color="green">complete</font> || bootlogo || stamps image with version and includes as initlogo.rle.  requires perl and perlmagick debian/ubuntu packages ||
