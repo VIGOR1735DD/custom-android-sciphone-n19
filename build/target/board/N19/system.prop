@@ -1,6 +1,28 @@
 #
-# system.prop for generic sdk 
+# system.prop for N19
 #
 
+# RIL interface
 rild.libpath=/system/lib/libreference-ril.so
-rild.libargs=-d /dev/ttyS0
+rild.libargs=-d /dev/mux1
+
+# WiFi interface
+wifi.interface=eth0
+wifi.module_name=gspi2480
+wifi.module_path=/system/etc/modules/wifi/gspi2480.ko
+
+# GPS Interface
+ro.kernel.android.gps=s3c2410_serial2
+
+# GPRS Interface
+ro.radio.use-ppp=yes
+
+# Use PacketVideo software codecs
+pv.codecs.software=1
+
+# Backlights
+backlight.lcd=/sys/class/backlight/toybox-bl
+backlight.button=
+backlight.keyboard=
+
+

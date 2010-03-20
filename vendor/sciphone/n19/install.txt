@@ -1,0 +1,32 @@
+=== While the phone is running current version ===
+
+1. copy out/target/product/N19/system.img onto the sd card (as system.img)
+
+2. copy out/target/product/N19/ramdisk.img onto the sd card (as ramdisk.img)
+
+3. delete everything form mtd@userdata
+
+4. flash_ramdisk.sh
+
+5. reboot
+
+6. enjoy
+
+
+=== To use automatic flash ===
+
+1. copy updata.txt to sd card
+
+2. copy ramdisk.img to sd card
+
+3. flash the phone
+
+4. remove sd card, remove updata.txt and ramdisk.uimg from it (or use different card from this point on)
+
+5. copy system.img to sd card
+
+6. insert sd card back into the phone
+
+7. reboot
+
+8. enjoy

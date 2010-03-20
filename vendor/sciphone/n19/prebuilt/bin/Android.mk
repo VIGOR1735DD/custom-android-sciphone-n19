@@ -16,7 +16,7 @@ TOOLS := \
   tar
 
 PRODUCT_COPY_FILES += $(LOCAL_PATH)/flash_ramdisk.sh:system/bin/flash_ramdisk.sh \
-  $(LOCAL_PATH)/adbd:sbin/adbd
+  $(LOCAL_PATH)/adbd:root/sbin/adbd
   
 include $(CLEAR_VARS)
 LOCAL_MODULE := busybox
