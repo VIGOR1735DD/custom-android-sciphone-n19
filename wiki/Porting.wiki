@@ -31,14 +31,14 @@ Follow the instructions on http://source.android.com/download
 When you get to the step 'Initializing a Repo client' make sure you put the branch name you wish to work on.  Eg: 
 
 {{{
-$ repo init -u git://android.git.kernel.org/platform/manifest.git -b eclair
+$ repo init -u git://android.git.kernel.org/platform/manifest.git -b android-2.1_r2
 }}}
 
-This will get eclair branch of the Android source.  Download and wait for everything to finish.
+This will get eclair branch of the Android source, tag android-2.1_r2.  Download and wait for everything to finish.
 
 === Moving baselines ===
 
-It appears that 'cupcake', 'donut', and 'eclair' branches are, in fact, head branches for these builds.  Therefore, patches we have in subversion here, get outdated, and fail compilation.  Instead of having moving base, we're working towards identifying static tags that we should be working from.   We should have an update in a few days.
+Current work is on eclair only, off the android-2.1_r2 tag.  Other versions (cupcake, donut) currently don't work, feel free to dig into these if you're interested.
 
 === Get Sciphone N19 patches ===
 
@@ -102,8 +102,8 @@ Current status:
 || 6. || <font color="green">complete</font> || /system/etc || config files form /system/etc need to be correctly integrated ||
 || 7. || <font color="green">complete</font> || adbd & busybox || adbd and busybox copied, few 'applets' symlinked in /system/bin/ to busybox ||
 || 8. || <font color="orange">in progress</font> || install process || intended install is:<br/>- system.img onto sdcard, mounted via loop device from init.rc<br/>- data mounted from flash memory<br/>- /data/app and /data/dalvik-cache symbolic linked to /system folders<br/>(that reside on the loop device that's a file on sdcard) ||
-|| 9. || <font color="red">not started</font> || documentation || write installation guide ||
-|| 10. || <font color="orange">in progress</font> || sdcard mounting || we need to inform vold that /sdcard has already been mounted, since we do it during boot ||
+|| 9. || <font color="orange">in progress</font> || documentation || write installation guide.  initial draft in vendor/sciphone/n19/install.txt ||
+|| 10. || <font color="green">complete</font> || sdcard mounting || we need to inform vold that /sdcard has already been mounted, since we do it during boot ||
 || 11. || <font color="green">complete</font> || keypad || View the wiki about KeyPad ||
 || 12. || <font color="orange">in progress</font> || touchscreen || View the wiki about TouchScreen ||
 || 13. || <font color="red">not started</font> || testing || find all other things that don't work ||
@@ -115,3 +115,4 @@ Current status:
 || 19. || <font color="red">not started</font> || apps || n19 specific apps need to be imported (eg calibration) ||
 || 20. || <font color="red">not started</font> || gapps || google apps (contacts/calendar sync, market, googletalk, youtube, ...) ||
 || 21. || <font color="red">not started</font> || admin || consider using google code issues tracker for tracking these efforts ||
+|| 22. || <font color="red">not started</font> || dexopt || dex optimization is meant to be performed on the actual device (or emulator, but we don't want to get into building armv4t version of the emulator).  We don't want dalvik-cache to be used to generate these.  Investigate and find a proper way of running this on the phone, as a manual step at the end of the build. ||

@@ -22,11 +22,13 @@ my $image = Image::Magick->new(size=>'240x320');
 
 $image->Read('-');
 
-$image->Annotate(pointsize=>'18', stretch=> 'Expanded', fill=>'white', text=>lc($options{b}), x=>60, y=>60);
+$image->Annotate(pointsize=>'18', stretch=> 'Expanded', fill=>'white', text=>'eclair', x=>100, y=>30);
 
-$image->Annotate(pointsize=>'10', fill=>'#29d7c1', text=>lc($options{p}), x=>60, y=>90);
+$image->Annotate(pointsize=>'12', stretch=> 'Expanded', fill=>'white', text=>lc($options{b}), x=>105, y=>43);
 
-$image->Annotate(pointsize=>'10', fill=>'#29d7c1', text=>lc('build: '.$options{v}), x=>60, y=>105);
+$image->Annotate(pointsize=>'10', fill=>'#29d7c1', text=>lc($options{p}), x=>5, y=>300);
+
+$image->Annotate(pointsize=>'10', fill=>'#29d7c1', text=>lc('build: '.$options{v}), x=>5, y=>313);
 
 $image->Write(filename=>'RGB:-', compression=>'None');
  
