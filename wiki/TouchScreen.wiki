@@ -23,3 +23,5 @@ I/TSCalibrateUtil( 6140): Calibration result written to /data/data/com.aqumula.t
 }}}
 
 Look that the activity is called "com.aqumula.ta1.tscalibrate", on www.aqumula.com is posted a TA1, an email has been sent already asking for some information.
+
+As i looked on various sources, it seems that you've got first to have correct power management before "activating" the touchscreen, because the touchscreen module is handled via /dev/input on linux.
