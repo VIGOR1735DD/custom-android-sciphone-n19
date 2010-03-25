@@ -14,11 +14,12 @@ first it looks for "images/android-logo-mask.png" and "images/android-logo-shine
 
 Then, inside the zip file, it tries to parse desc.txt which is meant to be in this format:
 
-<width> <height> <fps>
-p <count> <pause> <path>
-p <count> <pause> <path>
+{{{
+width height fps
+p count pause path
+p count pause path
 ...
-
+}}}
 
 frist line (doesn't have to be first -- it could be anywhere, and it can be repeated but the last line only will be used) defines the animation, then after that 'p' lines add parts of it.
 
