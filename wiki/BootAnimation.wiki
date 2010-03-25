@@ -8,9 +8,9 @@ Logcat spits this:
 03-24 15:20:01.427 W/zipro   (  460): Unable to open zip '/system/media/bootanimation.zip': No such file or directory
 }}}
 
-frameworks/base/cmds/bootanimation/BootAnimation.cpp does that
+frameworks/base/cmds/bootanimation/BootAnimation.cpp does that.  checks if bootanimation.zip exists, and if it doesn't runs the default animation:
 
-first it looks for "images/android-logo-mask.png" and "images/android-logo-shine.png"
+it uses "images/android-logo-mask.png" and "images/android-logo-shine.png"
 
 {{{
 sashap@rogue:~/src/android/platform/out/target/product/N19/system/framework$ unzip -l framework-res.apk
@@ -26,9 +26,9 @@ Archive:  framework-res.apk
 ...
 }}}
 
-If it can't find them, it looks for /data/local/bootanimation.zip or /system/media/bootanimation.zip
+If it found /data/local/bootanimation.zip or /system/media/bootanimation.zip instead of stock android animation it uses these.
 
-Then, inside the zip file, it tries to parse desc.txt which is meant to be in this format:
+Inside the zip file, it tries to parse desc.txt which is meant to be in this format:
 
 {{{
 width height fps
