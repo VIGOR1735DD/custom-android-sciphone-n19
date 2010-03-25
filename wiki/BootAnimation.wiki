@@ -7,3 +7,19 @@ Logcat spits this:
 03-24 15:20:01.412 W/zipro   (  460): Unable to open zip '/data/local/bootanimation.zip': No such file or directory
 03-24 15:20:01.427 W/zipro   (  460): Unable to open zip '/system/media/bootanimation.zip': No such file or directory
 }}}
+
+frameworks/base/cmds/bootanimation/BootAnimation.cpp does that
+
+first it looks for "images/android-logo-mask.png" and "images/android-logo-shine.png" -- not sure where these should be.  If it can't find them, it looks for /data/local/bootanimation.zip or /system/media/bootanimation.zip
+
+Then, inside the zip file, it tries to parse desc.txt which is meant to be in this format:
+
+<width> <height> <fps>
+p <count> <pause> <path>
+p <count> <pause> <path>
+...
+
+
+frist line (doesn't have to be first -- it could be anywhere, and it can be repeated but the last line only will be used) defines the animation, then after that 'p' lines add parts of it.
+
+I'm not exactly sure what are <count> and <pause> values for, but the <path> is a filename of the image to be loaded.  there's a comment that says 'supports only stored png files' so I'd assume thats it -- no jpgs or anything else.
