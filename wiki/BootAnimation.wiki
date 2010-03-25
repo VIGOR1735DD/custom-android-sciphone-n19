@@ -23,4 +23,4 @@ p count pause path
 
 frist line (doesn't have to be first -- it could be anywhere, and it can be repeated but the last line only will be used) defines the animation, then after that 'p' lines add parts of it.
 
-I'm not exactly sure what are <count> and <pause> values for, but the <path> is a filename of the image to be loaded.  there's a comment that says 'supports only stored png files' so I'd assume thats it -- no jpgs or anything else.
+I'm not exactly sure what are <b>count</b> and <b>pause</b> values for, but the <b>path</b> is a filename of the image to be loaded.  there's a comment that says 'supports only stored png files' so I'd assume thats it -- no jpgs or anything else.
