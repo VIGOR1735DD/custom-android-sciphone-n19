@@ -1,0 +1,9 @@
+#summary Findings about enabling the Boot animation
+
+= Scratchpad =
+
+Logcat spits this:
+{{{
+03-24 15:20:01.412 W/zipro   (  460): Unable to open zip '/data/local/bootanimation.zip': No such file or directory
+03-24 15:20:01.427 W/zipro   (  460): Unable to open zip '/system/media/bootanimation.zip': No such file or directory
+}}}
