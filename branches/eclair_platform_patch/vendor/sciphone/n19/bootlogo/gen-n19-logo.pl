@@ -22,13 +22,23 @@ my $image = Image::Magick->new(size=>'240x320');
 
 $image->Read('-');
 
-$image->Annotate(pointsize=>'18', stretch=> 'Expanded', fill=>'white', text=>'eclair', x=>100, y=>30);
+my $vert_coord=210;
 
-$image->Annotate(pointsize=>'12', stretch=> 'Expanded', fill=>'white', text=>lc($options{b}), x=>105, y=>43);
+$image->Annotate(pointsize=>'18', stretch=> 'Expanded', fill=>'white', text=>'eclair', x=>100, y=>$vert_coord);
 
-$image->Annotate(pointsize=>'10', fill=>'#29d7c1', text=>lc($options{p}), x=>5, y=>300);
+$image->Annotate(pointsize=>'12', stretch=> 'Expanded', fill=>'white', text=>lc($options{b}), x=>105, y=>$vert_coord+13);
 
-$image->Annotate(pointsize=>'10', fill=>'#29d7c1', text=>lc('build: '.$options{v}), x=>5, y=>313);
+$vert_coord=300;
+
+$image->Annotate(pointsize=>'10', fill=>'#29d7c1', text=>lc($options{p}), x=>3, y=>$vert_coord-13);
+
+$image->Annotate(pointsize=>'10', fill=>'#29d7c1', text=>lc('build: '.$options{v}), x=>3, y=>$vert_coord);
+
+$image->Annotate(pointsize=>'9', fill=>'white', text=>'build date:', x=>125, y=>$vert_coord-13);
+$image->Annotate(pointsize=>'9', fill=>'white', text=> scalar localtime(), x=>125, y=>$vert_coord);
+
+$image->Annotate(pointsize=>'9', fill=>'white', text=>'http://code.google.com/p/custom-android-sciphone-n19/', x=>3, y=>$vert_coord + 13);
+
 
 $image->Write(filename=>'RGB:-', compression=>'None');
  
