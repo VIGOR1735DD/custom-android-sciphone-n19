@@ -105,16 +105,17 @@ Current status:
 || 9. || <font color="orange">in progress</font> || documentation || write installation guide.  initial draft in vendor/sciphone/n19/install.txt ||
 || 10. || <font color="green">complete</font> || sdcard mounting || we need to inform vold that /sdcard has already been mounted, since we do it during boot ||
 || 11. || <font color="green">complete</font> || keypad || View the wiki about KeyPad ||
-|| 12. || <font color="orange">in progress</font> || touchscreen || View the wiki about TouchScreen ||
-|| 13. || <font color="red">not started</font> || testing || find all other things that don't work ||
+|| 12. || <font color="green">complete</font> || touchscreen || View the wiki about TouchScreen.  Note current implementatio does auto-calibration.  touch corners of the screen after reboot to get the phone to autocalibrate. ||
+|| 13. || <font color="red">in progress</font> || testing || find all other things that don't work ||
 || 14. || <font color="green">complete</font> || bootlogo || stamps image with version and includes as initlogo.rle.  requires perl and perlmagick debian/ubuntu packages ||
-|| 15. || <font color="red">not started</font> || usb mass storage || doesn't work (unable to verify if it works) ||
-|| 16. || <font color="red">not started</font> || telephony || doesn't work (unable to verify if we can make and receive calls, and if sim card is being used properly) ||
-|| 17. || <font color="red">not started</font> || wifi || doesn't work (unable to verify) ||
-|| 18. || <font color="red">not started</font> || bluetooth || doesn't work (unable to verify) ||
-|| 19. || <font color="red">not started</font> || apps || n19 specific apps need to be imported (eg calibration) ||
+|| 15. || <font color="red">not started</font> || usb mass storage || doesn't work ||
+|| 16. || <font color="red">not started</font> || telephony || doesn't work ||
+|| 17. || <font color="red">not started</font> || wifi || doesn't work ||
+|| 18. || <font color="red">not started</font> || bluetooth || doesn't work ||
+|| 19. || <font color="red">not started</font> || apps || n19 specific apps need to be imported ||
 || 20. || <font color="red">not started</font> || gapps || google apps (contacts/calendar sync, market, googletalk, youtube, ...) ||
 || 21. || <font color="red">not started</font> || admin || consider using google code issues tracker for tracking these efforts ||
 || 22. || <font color="red">not started</font> || dexopt || dex optimization is meant to be performed on the actual device (or emulator, but we don't want to get into building armv4t version of the emulator).  We don't want dalvik-cache to be used to generate these.  Investigate and find a proper way of running this on the phone, as a manual step at the end of the build. ||
 || 23. || <font color="red">not started</font> || audio || android-2.1_r2 tag doesn't exist on projects external/alsa-lib external/alsa-utils and hardware/alsa_sound<br/>we need to identify which ones to include, amend instructions on dowloading source, do whatever changes are needed, and get the audio going ||
-|| 24. || <font color="red">not started</font> || battery/power || power management not working correctly ||
+|| 24. || <font color="green">completed</font> || battery/power || power management works correctly -- battery state / charging state reported correctly ||
+|| 25. || <font color="red">not started</font> || calculator || its buggy... 0+0 = 0; but 1+1 = some very big number ||
