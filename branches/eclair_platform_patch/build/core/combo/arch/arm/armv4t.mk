@@ -7,7 +7,6 @@
 # code in assembler source since the bx (branch and exchange) instruction is
 # not supported.
 #
-$(warning ARMv4t support is currently a work in progress. It does not work right now!)
 ARCH_ARM_HAVE_THUMB_SUPPORT := false
 ARCH_ARM_HAVE_THUMB_INTERWORKING := false
 ARCH_ARM_HAVE_FAST_INTERWORKING := false

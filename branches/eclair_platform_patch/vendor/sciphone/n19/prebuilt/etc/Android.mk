@@ -20,5 +20,4 @@ PRODUCT_COPY_FILES += \
 		$(LOCAL_PATH)/usbms_stop.sh:system/etc/usbms_stop.sh \
 		$(LOCAL_PATH)/vold.conf:system/etc/vold.conf \
 		$(LOCAL_PATH)/wpa_supplicant.sh:system/etc/wpa_supplicant.sh \
-		$(LOCAL_PATH)/zygote.sh:system/etc/zygote.sh \
-		$(LOCAL_PATH)/pointercal_orig:system/etc/pointercal_orig
+		$(LOCAL_PATH)/zygote.sh:system/etc/zygote.sh
