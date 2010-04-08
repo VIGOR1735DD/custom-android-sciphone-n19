@@ -109,7 +109,7 @@ Current status:
 || 13. || <font color="red">in progress</font> || testing || find all other things that don't work ||
 || 14. || <font color="green">complete</font> || bootlogo || stamps image with version and includes as initlogo.rle.  requires perl and perlmagick debian/ubuntu packages ||
 || 15. || <font color="red">not started</font> || usb mass storage || doesn't work ||
-|| 16. || <font color="red">not started</font> || telephony || doesn't work ||
+|| 16. || <font color="orange">in progress</font> || telephony || doesn't work ||
 || 17. || <font color="red">not started</font> || wifi || doesn't work ||
 || 18. || <font color="red">not started</font> || bluetooth || doesn't work ||
 || 19. || <font color="red">not started</font> || apps || n19 specific apps need to be imported ||
@@ -119,3 +119,5 @@ Current status:
 || 23. || <font color="red">not started</font> || audio || android-2.1_r2 tag doesn't exist on projects external/alsa-lib external/alsa-utils and hardware/alsa_sound<br/>we need to identify which ones to include, amend instructions on dowloading source, do whatever changes are needed, and get the audio going ||
 || 24. || <font color="green">completed</font> || battery/power || power management works correctly -- battery state / charging state reported correctly ||
 || 25. || <font color="red">not started</font> || calculator || its buggy... 0+0 = 0; but 1+1 = some very big number ||
+|| 26. || <font color="red">not started</font> || calibration || current 'auto calibration' is a hack. we need a permanent way to calibrate screen properly ||
+|| 27. || <font color="red">not started</font> || gprs || doesn't work ||
