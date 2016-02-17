@@ -1,0 +1,27 @@
+# Description #
+
+To start _Linux-USB Ethernet Gadget_ following script should be executed:
+```
+#!/system/bin/sh
+# Stop ADBd to free USB port
+/system/bin/stop adbd
+/system/bin/rmmod g_android_adb
+# Start Ethernet Gadget module
+/system/bin/insmod /system/etc/modules/preload/g_ether.ko
+# Setup network
+ifconfig usb0 192.168.1.201 netmask 255.255.255.255 up
+```
+
+
+Following script should stop Ethernet Gadget and run ADBd, but it doesn't, possibly because of the [issue](http://docs.openmoko.org/trac/ticket/2240), so the only thing that currently helps is to reboot the device:
+```
+#!/system/bin/sh
+# Stop Ethernet Gadget
+ifconfig usb0 down
+# Remove Ethernet Gadget module
+/system/bin/rmmod g_ether
+# Start ADBd
+/system/bin/start adbd
+```
+
+The USB device will identify itself as 0525:a4a1 (Linux-USB Ethernet Gadget). I have no success with patching _linux.inf_ file, which was supposed to work with 0525:a4a2 (Linux-USB Ethernet/RNDIS Gadget) under Windows, so, maybe this will work under Linux.

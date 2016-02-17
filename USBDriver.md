@@ -1,0 +1,18 @@
+# Introduction #
+
+USB Driver for Sciphone N19
+
+
+# Details #
+
+USB driver for the phone is not needed, unless you plan to do hacks using the adb tool that comes with Android Software Development Kit.  For access to sdcard via usb while the phone is charging, use USB mass storage toggle in your settings.
+
+If you really want to get adb going then follow the steps below.
+
+Go to http://developer.android.com/sdk/index.html and download SDK.
+
+After installing the SDK, download USB driver for windows.
+
+Then, replace android\_winusb.inf with the one from this site: http://custom-android-sciphone-n19.googlecode.com/files/android_winusb.inf
+
+The driver will now recognize N19.

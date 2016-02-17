@@ -1,0 +1,51 @@
+# Introduction #
+
+This is a collection of apps gathered from other update ROMs.  This update works only if you've already installed [official update](OfficalUpdate.md).  It enables contacts synchronization, amongst other things.
+
+
+# Details #
+
+Download link: http://custom-android-sciphone-n19.googlecode.com/files/update_v1.0.zip
+
+To install it you must have ADB running, therefore it is not for an end user.  Use it at your own risk.
+
+To install these, unzip them into one folder, then run run.bat. After installation, you must perform factory reset from the settings.
+
+Following packages are installed/replaced:
+```
+Calendar.apk
+CalendarProvider.apk
+checkin.apk
+Contacts.apk
+DownloadProvider.apk
+DrmProvider.apk
+Gmail.apk
+GmailProvider.apk
+GoogleApps.apk
+GoogleContactsProvider.apk
+GoogleMaps.apk
+GooglePartnerSetup.apk
+GoogleSearch.apk
+GoogleSettingsProvider.apk
+GoogleSubscribedFeedsProvider.apk
+gtalkservice.apk
+ImProvider.apk
+MediaUploader.apk
+NetworkLocation.apk
+Street.apk
+Talk.apk
+Vending.apk
+YouTube.apk
+```
+
+Following packages are removed (they're replaced with Google**versions)
+```
+ContactsProvider.apk
+SubscribedFeedsProvider.apk
+Maps.apk
+```**
+
+Following shell tool added:
+```
+/system/bin/busybox
+```

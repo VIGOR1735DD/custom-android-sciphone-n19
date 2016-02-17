@@ -1,0 +1,25 @@
+# Scratchpad #
+
+Found this on the Logcat:
+
+`I/EventHub(  434): New device: path=/dev/input/event0 name=S3C TouchScreen id=0x10001 (of 0x2) index=2 fd=51 classes=0x4`
+
+Looks like the device is /dev/input/event0 now we got to find out what kernel module manages it.
+
+When a "Calibration" is launched, here is what happens on logcat:
+```
+I/ActivityManager( 5139): Starting activity: Intent { action=android.intent.action.MAIN categories={android.intent.category.HOME}
+flags=0x10200000 comp={com.android.launcher/com.android.launcher.Launcher} }
+I/ActivityManager( 5139): Starting activity: Intent { action=android.intent.action.MAIN categories={android.intent.category.LAUNCH
+ER} flags=0x10200000 comp={com.aqumula.ta1.tscalibrate/com.aqumula.ta1.tscalibrate.TSCalibrateActivity} }
+W/IInputConnectionWrapper( 5176): showStatusIcon on inactive InputConnection
+D/dalvikvm( 6128): GC freed 1545 objects / 112544 bytes in 134ms
+D/dalvikvm( 5176): GC freed 832 objects / 41272 bytes in 166ms
+I/TSCalibrateUtil( 6140): Calibration passed sanity check.
+I/TSCalibrate( 6140): Calibration complete.
+I/TSCalibrateUtil( 6140): Calibration result written to /data/data/com.aqumula.ta1.tscalibrate/pointercal
+```
+
+Look that the activity is called "com.aqumula.ta1.tscalibrate", on www.aqumula.com is posted a TA1, an email has been sent already asking for some information.
+
+As i looked on various sources, it seems that you've got first to have correct power management before "activating" the touchscreen, because the touchscreen module is handled via /dev/input on linux.

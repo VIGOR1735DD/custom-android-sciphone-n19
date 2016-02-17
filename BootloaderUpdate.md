@@ -1,0 +1,47 @@
+# Introduction #
+
+Described method was tested only on the phone with new bootloader. During this test the bootloader was downgraded, successfully rebooted to the working state and upgraded back to the new version of bootloader (V091117).
+
+# Disclaimer #
+
+**Described operations may brick your phone. Do it at your own risk. Project and it's contributers are not responsible for the problems with your phone caused by your actions.**
+
+Backup before trying any of the following steps.
+
+# How to update #
+
+To update the firmware your should perform next steps:
+  1. Download the new [bootloader](http://custom-android-sciphone-n19.googlecode.com/files/bootloader.2009-10-17.img).
+> 2. Copy downloaded _bootloader.2009-10-17.img_ to the root folder of your microSD card using card reader and insert the cart into the phone.
+> > Alternatively you can push the bootloader image to the phone using console:
+```
+adb push bootloader.2009-10-17.img /sdcard/bootloader.img
+```
+
+> 3. Perform following commands in console:
+```
+adb shell
+# cat /dev/zero > /dev/block/mtdblock0
+# flash_image Bootloader /sdcard/bootloader.img
+```
+> 4. Reboot the phone.
+
+Now you should have new bootloader on your phone showing it's version V091117.
+
+
+
+_In my case the phone refused to boot after reflashing, but erasing of userdata partition helped to restore it._
+
+To erase your userdata partition you can create _updata.txt_ file with following content:
+```
+Androin auto updata test!!!
+# Erase userdata
+nand erase 4a00000 3600000
+
+# Android Boot
+set bootdelay 1
+set bootcmd "nand read 33C00000 100000 200000;nand read 33B00000 300000 40000;bootm 33C00000 33B00000"
+set bootargs root=/dev/mtdblock2 mtdparts=s3c-nand:1M@0(Bootloader),2M(Kernel),1M(initramfs),70M(system),-(userdata) console=ttySAC2,115200
+save
+```
+Put this file to the root of your microSD card, insert card into the phone and reboot it. After erasing userdata partition phone starts vibrating. You have to remove the card and reboot the phone again. After this operation you have to remove _updata.txt_ file from the card.

@@ -1,0 +1,40 @@
+# Scratchpad #
+
+Logcat spits this:
+```
+03-24 15:20:01.412 W/zipro   (  460): Unable to open zip '/data/local/bootanimation.zip': No such file or directory
+03-24 15:20:01.427 W/zipro   (  460): Unable to open zip '/system/media/bootanimation.zip': No such file or directory
+```
+
+frameworks/base/cmds/bootanimation/BootAnimation.cpp does that.  checks if bootanimation.zip exists, and if it doesn't runs the default animation:
+
+it uses "images/android-logo-mask.png" and "images/android-logo-shine.png"
+
+```
+sashap@rogue:~/src/android/platform/out/target/product/N19/system/framework$ unzip -l framework-res.apk
+Archive:  framework-res.apk
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+   100159  2008-04-16 11:40   META-INF/MANIFEST.MF
+   100201  2008-04-16 11:40   META-INF/CERT.SF
+     1714  2008-04-16 11:40   META-INF/CERT.RSA
+    45164  2008-04-16 11:40   AndroidManifest.xml
+     5306  2008-04-16 11:40   assets/images/android-logo-mask.png
+      641  2008-04-16 11:40   assets/images/android-logo-shine.png
+...
+```
+
+If it found /data/local/bootanimation.zip or /system/media/bootanimation.zip instead of stock android animation it uses these.
+
+Inside the zip file, it tries to parse desc.txt which is meant to be in this format:
+
+```
+width height fps
+p count pause path
+p count pause path
+...
+```
+
+frist line (doesn't have to be first -- it could be anywhere, and it can be repeated but the last line only will be used) defines the animation, then after that 'p' lines add parts of it.
+
+I'm not exactly sure what are <b>count</b> and <b>pause</b> values for, but the <b>path</b> is a filename of the image to be loaded.  there's a comment that says 'supports only stored png files' so I'd assume thats it -- no jpgs or anything else.

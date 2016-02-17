@@ -1,0 +1,22 @@
+# Introduction #
+
+This is a collection of usual unix tools, compiled to run on armv4t cpu, thus it works on N19 phone.
+
+
+# Details #
+
+Download link: http://custom-android-sciphone-n19.googlecode.com/files/busybox
+
+```
+adb -d push busybox /system/bin
+adb -d shell
+# chmod 0777 /system/bin/busybox
+```
+
+To use it:
+```
+adb -d shell
+# busybox ls -al
+# busybox fdisk
+...
+```
